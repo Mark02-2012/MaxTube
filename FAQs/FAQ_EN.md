@@ -2,6 +2,9 @@
 
 [✓] 🇺🇸 English FAQ | [🇷🇺 ЧаВо на Русском](FAQ_RU.md) | [🇮🇹 FAQ in Italiano](FAQ_IT.md) | [🇵🇱 FAQ po Polsku](FAQ_PL.md)
 
+> [!WARNING]
+> This FAQ documents the retired YTLite-based build. See the [current platform support and build instructions](../README.md).
+
 <details>
   <summary>What iOS versions does YouTube Plus support?</summary>
     <p>YouTube Plus supports iOS 14 and above. <strong>However</strong>, if you're sideloading it on a non-jailbroken device, you must also consider the YouTube app's compatibility with your iOS version. Below is a list of the latest supported YouTube versions per iOS:</p>

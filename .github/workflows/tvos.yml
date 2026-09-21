@@ -1,0 +1,100 @@
+name: Create MaxTube tvOS app
+
+on:
+  workflow_dispatch:
+    inputs:
+      ipa_url:
+        description: "Direct URL to a decrypted YouTube tvOS 4.54.01 IPA"
+        required: true
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Package tvOS IPA
+    runs-on: macos-latest
+    outputs:
+      release_name: ${{ steps.metadata.outputs.release_name }}
+      release_tag: ${{ steps.metadata.outputs.release_tag }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Hide IPA URL
+        uses: levibostian/action-hide-sensitive-inputs@15951963797b16aa43fa0b093b45cd2db0319fdd # v1
+
+      - name: Download IPA
+        env:
+          IPA_URL: ${{ inputs.ipa_url }}
+        run: |
+          curl --fail --location "$IPA_URL" --output youtube-tvos.ipa
+          unzip -tq youtube-tvos.ipa >/dev/null
+
+      - name: Install MuTube runner
+        run: brew install uv
+
+      - name: Read artifact metadata
+        id: metadata
+        run: |
+          source config/mutube.env
+          short_revision="${MUTUBE_REVISION:0:7}"
+          {
+            echo "ipa=MaxTube_tvOS_YouTube_${MUTUBE_YOUTUBE_VERSION}_MuTube_${short_revision}.ipa"
+            echo "release_tag=mutube-${short_revision}-youtube-${MUTUBE_YOUTUBE_VERSION}-${{ github.run_number }}"
+            echo "release_name=MaxTube tvOS: MuTube ${short_revision} with YouTube ${MUTUBE_YOUTUBE_VERSION}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Package IPA
+        env:
+          OUTPUT_IPA: ${{ steps.metadata.outputs.ipa }}
+        run: scripts/package-tvos.sh youtube-tvos.ipa "release/$OUTPUT_IPA"
+
+      - name: Prepare release notes
+        run: |
+          source config/mutube.env
+          sed \
+            -e "s/%yt_version%/$MUTUBE_YOUTUBE_VERSION/g" \
+            -e "s/%mutube_revision%/$MUTUBE_REVISION/g" \
+            -e "s/%tizentube_version%/$TIZENTUBE_VERSION/g" \
+            .github/RELEASE_TEMPLATE/Release_Notes_tvOS.md > release/release-notes.md
+          cp THIRD_PARTY_NOTICES.md release/
+
+      - name: Upload packaged release
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: packaged-tvos-release
+          path: release/
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Create draft release
+    runs-on: ubuntu-latest
+    needs: package
+    permissions:
+      contents: write
+    steps:
+      - name: Download packaged release
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: packaged-tvos-release
+          path: release
+
+      - name: Create draft release
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3
+        with:
+          tag_name: ${{ needs.package.outputs.release_tag }}
+          name: ${{ needs.package.outputs.release_name }}
+          files: |
+            release/*.ipa
+            release/THIRD_PARTY_NOTICES.md
+          body_path: release/release-notes.md
+          draft: true

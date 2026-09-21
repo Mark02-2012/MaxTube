@@ -1,136 +1,145 @@
-name: Create YouTube Plus or MaxTube app
+name: Create MaxTube app
 
 on:
   workflow_dispatch:
     inputs:
       enable_youpip:
-        description: "Integrate YouPiP"
-        type: boolean
-        required: true
-        default: false
-
+        {
+          description: "Integrate YouPiP",
+          type: boolean,
+          required: true,
+          default: false,
+        }
       enable_ytuhd:
-        description: "Integrate YTUHD"
-        type: boolean
-        required: true
-        default: false
-
+        {
+          description: "Integrate YTUHD",
+          type: boolean,
+          required: true,
+          default: false,
+        }
       enable_yq:
-        description: "Integrate YouQuality"
-        type: boolean
-        required: true
-        default: false
-
+        {
+          description: "Integrate YouQuality",
+          type: boolean,
+          required: true,
+          default: false,
+        }
       enable_ryd:
-        description: "Integrate Return YouTube Dislikes"
-        type: boolean
-        required: true
-        default: false
-
+        {
+          description: "Integrate Return YouTube Dislikes",
+          type: boolean,
+          required: true,
+          default: false,
+        }
       enable_ytabc:
-        description: "Integrate YTABConfig"
-        type: boolean
-        required: true
-        default: false
-
+        {
+          description: "Integrate YTABConfig",
+          type: boolean,
+          required: true,
+          default: false,
+        }
       enable_demc:
-        description: "Integrate DontEatMyContent"
-        type: boolean
-        required: true
-        default: false
-
+        {
+          description: "Integrate DontEatMyContent",
+          type: boolean,
+          required: true,
+          default: false,
+        }
       enable_ytweaks:
-        description: "Integrate YTweaks (MaxTube)"
-        type: boolean
-        required: true
-        default: false
-        
+        {
+          description: "Integrate YTweaks",
+          type: boolean,
+          required: true,
+          default: false,
+        }
       enable_gonerino:
-        description: "Integrate Gonerino (MaxTube)"
-        type: boolean
-        required: true
-        default: false
-
+        {
+          description: "Integrate Gonerino",
+          type: boolean,
+          required: true,
+          default: false,
+        }
       enable_youspeed:
-       description: "Integrate YouSpeed (MaxTube)"
-       type: boolean
-       required: true
-       default: false
-
+        {
+          description: "Integrate YouSpeed",
+          type: boolean,
+          required: true,
+          default: false,
+        }
       enable_ytlcm:
-       description: "Integrate YTLowContrastMode (MaxTube)"
-       type: boolean
-       required: true
-       default: false
-
+        {
+          description: "Integrate YTLowContrastMode",
+          type: boolean,
+          required: true,
+          default: false,
+        }
       enable_VolumeBoostYT:
-       description: "Integrate VolumeBoostYT (MaxTube)"
-       type: boolean
-       required: true
-       default: false
-
+        {
+          description: "Integrate VolumeBoostYT",
+          type: boolean,
+          required: true,
+          default: false,
+        }
       enable_YouGetCaption:
-       description: "Integrate YouGetCaption (MaxTube)"
-       type: boolean
-       required: true
-       default: false
-
+        {
+          description: "Integrate YouGetCaption",
+          type: boolean,
+          required: true,
+          default: false,
+        }
       enable_ytpf:
-       description: "Integrate YTPlaybackFix, my tweak (MaxTube)"
-       type: boolean
-       required: true
-       default: false
-
+        {
+          description: "Integrate YTPlaybackFix",
+          type: boolean,
+          required: true,
+          default: false,
+        }
       enable_ytpfBETA:
-       description: "Integrate my YTPlaybackFix but latest beta version, at your own risk... (MaxTube)"
-       type: boolean
-       required: true
-       default: false
-
+        {
+          description: "Integrate the latest YTPlaybackFix beta",
+          type: boolean,
+          required: true,
+          default: false,
+        }
       enable_ycq:
-       description: "Integrate YouChooseQuality (MaxTube)"
-       type: boolean
-       required: true
-       default: false
-
+        {
+          description: "Integrate YouChooseQuality",
+          type: boolean,
+          required: true,
+          default: false,
+        }
       enable_ys:
-       description: "Integrate YouShare (MaxTube)"
-       type: boolean
-       required: true
-       default: false
-
+        {
+          description: "Integrate YouShare",
+          type: boolean,
+          required: true,
+          default: false,
+        }
       enable_youloop:
-       description: "NEW! Integrate YouLoop (MaxTube)"
-       type: boolean
-       required: true
-       default: false
-
+        {
+          description: "Integrate YouLoop",
+          type: boolean,
+          required: true,
+          default: false,
+        }
       enable_youmute:
-       description: "NEW! Integrate YouMute (MaxTube)"
-       type: boolean
-       required: true
-       default: false
-
+        {
+          description: "Integrate YouMute",
+          type: boolean,
+          required: true,
+          default: false,
+        }
       ipa_url:
-        description: "URL to the decrypted IPA file"
-        default: ""
+        description: "Direct URL to a decrypted universal iPhone/iPad YouTube IPA"
         required: true
         type: string
-
-      tweak_version:
-        description: "The version of the tweak to use. Versions that you can use are from 5.1 to 5.2.2 (no 5.2)"
-        default: "5.2.2"
-        required: true
-        type: string
-
       display_name:
-        description: "App Name (Optional)"
+        description: "App display name"
         default: "YouTube"
         required: true
         type: string
-
       bundle_id:
-        description: "BundleID (Optional)"
+        description: "App bundle identifier"
         default: "com.google.ios.youtube"
         required: true
         type: string
@@ -138,6 +147,9 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   build-tweaks:
@@ -161,120 +173,128 @@ jobs:
       enable_ys: ${{ inputs.enable_ys }}
       enable_youloop: ${{ inputs.enable_youloop }}
       enable_youmute: ${{ inputs.enable_youmute }}
-      tweak_version: ${{ inputs.tweak_version }}
-
 
   package:
     name: Package IPA
     runs-on: macos-latest
     needs: build-tweaks
-    permissions:
-      contents: write
-
+    outputs:
+      release_name: ${{ steps.metadata.outputs.release_name }}
+      release_tag: ${{ steps.metadata.outputs.release_tag }}
     steps:
-      - name: Checkout main branch
-        uses: actions/checkout@v6.0.2       
-        with:
-          repository: Mark02-2012/YTPlusM
-          ref: main
-          
-      - name: Download built debs
-        uses: actions/download-artifact@v8
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Download built injectables
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: built-debs
-          path: ${{ github.workspace }}
+          path: injectables
 
-      - name: Hide sensitive inputs
-        uses: levibostian/action-hide-sensitive-inputs@v1
+      - name: Hide IPA URL
+        uses: levibostian/action-hide-sensitive-inputs@15951963797b16aa43fa0b093b45cd2db0319fdd # v1
         with:
-          exclude_inputs: bundle_id,display_name,enable_demc,enable_ryd,enable_ytabc,enable_youpip,enable_yq,enable_ytuhd,enable_ytweaks,enable_gonerino,enable_youspeed,enable_ytlcm,enable_VolumeBoostYT,enable_YouGetCaption,enable_ycq,enable_ys,enable_pdstm,enable_youloop,enable_youmute,enable_ytlocalqueue,info_note,tweak_version
-          
+          exclude_inputs: bundle_id,display_name,enable_demc,enable_ryd,enable_ytabc,enable_youpip,enable_yq,enable_ytuhd,enable_ytweaks,enable_gonerino,enable_youspeed,enable_ytlcm,enable_VolumeBoostYT,enable_YouGetCaption,enable_ycq,enable_ys,enable_youloop,enable_youmute,enable_ytpf,enable_ytpfBETA
 
-      - name: Download and validate IPA
+      - name: Download IPA
+        env:
+          IPA_URL: ${{ inputs.ipa_url }}
         run: |
-          wget "${{ inputs.ipa_url }}" --no-verbose -O youtube.ipa
-          file_type=$(file --mime-type -b youtube.ipa)
-          if [[ "$file_type" != "application/x-ios-app" && "$file_type" != "application/zip" ]]; then
-            echo "::error::Validation failed: The downloaded file is not a valid IPA. Detected type: $file_type."
-            exit 1
-          fi
+          curl --fail --location "$IPA_URL" --output youtube.ipa
+          unzip -tq youtube.ipa >/dev/null
 
-      - name: Get YouTube Version 
+      - name: Install packaging tools
         run: |
-          unzip -q youtube.ipa -d ytextracted
-          echo "YT_VERSION=$(grep -A 1 '<key>CFBundleVersion</key>' ytextracted/Payload/YouTube.app/Info.plist | grep '<string>' | awk -F'[><]' '{print $3}')" >> $GITHUB_ENV
+          brew install dpkg
+          pipx install --force https://github.com/asdfzxcvbn/pyzule-rw/archive/740d3716dcd98c20c000f12cdb88f1f0b2a533a4.zip
 
-      - name: Determines the Release Title Prefix
+      - name: Read artifact metadata
+        id: metadata
         run: |
-          if [ "${{ inputs.enable_ytweaks }}" = "false" ] && \
-             [ "${{ inputs.enable_gonerino }}" = "false" ] && \
-             [ "${{ inputs.enable_youspeed }}" = "false" ] && \
-             [ "${{ inputs.enable_ytlcm }}" = "false" ] && \
-             [ "${{ inputs.enable_VolumeBoostYT }}" = "false" ] && \
-             [ "${{ inputs.enable_YouGetCaption }}" = "false" ] && \
-             [ "${{ inputs.enable_ytpf }}" = "false" ] && \
-             [ "${{ inputs.enable_ycq }}" = "false" ] && \
-             [ "${{ inputs.enable_ys }}" = "false" ] && \
-             [ "${{ inputs.enable_youloop }}" = "false" ] && \
-             [ "${{ inputs.enable_youmute }}" = "false" ] && \
-             [ "${{ inputs.enable_ytpfBETA }}" = "false" ]; then
-            
-            echo "RELEASE_PREFIX=YTPlus" >> $GITHUB_ENV
-          else
-            echo "RELEASE_PREFIX=MaxTube" >> $GITHUB_ENV
-          fi
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import plistlib
+          import re
+          import subprocess
+          import zipfile
 
-      - name: Install cyan
-        run: pipx install --force https://github.com/asdfzxcvbn/pyzule-rw/archive/main.zip
+          with zipfile.ZipFile("youtube.ipa") as archive:
+              names = [name for name in archive.namelist()
+                       if name.startswith("Payload/") and name.endswith(".app/Info.plist")]
+              if len(names) != 1:
+                  raise SystemExit(f"expected one app Info.plist, found {len(names)}")
+              version = plistlib.loads(archive.read(names[0])).get("CFBundleShortVersionString", "")
 
-      - name: Inject tweaks into IPA
+          enhancer = subprocess.check_output(
+              ["dpkg-deb", "-f", "injectables/ytkace.deb", "Version"], text=True
+          ).strip()
+          for label, value in (("YouTube", version), ("YTKACE", enhancer)):
+              if not re.fullmatch(r"[A-Za-z0-9._-]+", value):
+                  raise SystemExit(f"unsafe {label} version: {value!r}")
+
+          print(f"youtube_version={version}")
+          print(f"enhancer_version={enhancer}")
+          print(f"ipa=MaxTube_YouTube_{version}_YTKACE_{enhancer}.ipa")
+          print(f"release_tag=ytkace-{enhancer}-youtube-{version}-${{ github.run_number }}")
+          print(f"release_name=MaxTube: YTKACE {enhancer} with YouTube {version}")
+          PY
+
+      - name: Package IPA
+        env:
+          APP_BUNDLE_ID: ${{ inputs.bundle_id }}
+          APP_DISPLAY_NAME: ${{ inputs.display_name }}
+          OUTPUT_IPA: ${{ steps.metadata.outputs.ipa }}
         run: |
-          tweaks="ytplus.deb OpenYoutubeSafariExtension.appex"
-          for f in *.deb; do
-            [ -f "$f" ] && tweaks="$tweaks $f"
-          done
-          cyan -i youtube.ipa -o ${{ env.RELEASE_PREFIX }}_${{ env.YT_VERSION }}_${{ inputs.tweak_version }}.ipa -uwef $tweaks -n "${{ inputs.display_name }}" -b ${{ inputs.bundle_id }}
-  
-      - name: Prepare Releases Notes
+          extras=()
+          while IFS= read -r path; do
+            extras+=("$path")
+          done < <(find injectables -mindepth 1 \
+            \( -type f -name '*.deb' ! -name 'ytkace.deb' -o -type d -name '*.appex' \) \
+            -print | LC_ALL=C sort)
+          scripts/package-ios.sh \
+            youtube.ipa \
+            injectables/ytkace.deb \
+            "release/$OUTPUT_IPA" \
+            "${extras[@]}"
+
+      - name: Prepare release notes
+        env:
+          ENHANCER_VERSION: ${{ steps.metadata.outputs.enhancer_version }}
+          YOUTUBE_VERSION: ${{ steps.metadata.outputs.youtube_version }}
         run: |
-          sed "s/%yt_version%/${{ env.YT_VERSION }}/g; s/%ytlite_version%/${{ inputs.tweak_version }}/g; s/%release_prefix%/${{ env.RELEASE_PREFIX }}/g" \
-          .github/RELEASE_TEMPLATE/Release_Notes.md > release_notes_prepared.md
+          sed \
+            -e "s/%yt_version%/$YOUTUBE_VERSION/g" \
+            -e "s/%ytkace_version%/$ENHANCER_VERSION/g" \
+            .github/RELEASE_TEMPLATE/Release_Notes.md > release/release-notes.md
+          cp THIRD_PARTY_NOTICES.md release/
 
-      - name: Prepare Releases Notes For iOS 15
-        run: |
-          if [ "${{ env.YT_VERSION }}" = "20.21.6" ]; then
-          
-          sed "s/%yt_version%/${{ env.YT_VERSION }}/g; s/%ytlite_version%/${{ inputs.tweak_version }}/g; s/%release_prefix%/${{ env.RELEASE_PREFIX }}/g" \
-          .github/RELEASE_TEMPLATE/Release_Notes_YT20.21.6.md > release_notes_prepared_ios_15.md
-          fi
-          
-      - name: Choose Releases Notes
-        run: |
-          if [ "${{ env.YT_VERSION }}" = "20.21.6" ]; then
-
-           echo "NOTES_SELECTED=release_notes_prepared_ios_15.md" >> $GITHUB_ENV
-          else
-           echo "NOTES_SELECTED=release_notes_prepared.md" >> $GITHUB_ENV
-          fi
-
-      - name: Define compatibility app in release title
-        run: |
-          if [ "${{ env.YT_VERSION }}" = "20.21.6" ]; then
-
-           echo "FOR_IOS15=(IOS 15+)" >> $GITHUB_ENV
-          else 
-           echo "FOR_IOS15=" >> $GITHUB_ENV
-          fi
-
-      - name: Upload to GitHub Releases
-        uses: softprops/action-gh-release@v3
+      - name: Upload packaged release
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          tag_name: ${{ inputs.tweak_version }}_${{ env.YT_VERSION }}(${{ github.run_number }})
-          name: ${{ env.RELEASE_PREFIX }} ${{ inputs.tweak_version }} and ${{ env.YT_VERSION }} ${{ env.FOR_IOS15 }}
-          files: ${{ env.RELEASE_PREFIX }}_${{ env.YT_VERSION }}_${{ inputs.tweak_version }}.ipa
+          name: packaged-release
+          path: release/
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Create draft release
+    runs-on: ubuntu-latest
+    needs: package
+    permissions:
+      contents: write
+    steps:
+      - name: Download packaged release
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: packaged-release
+          path: release
+
+      - name: Create draft release
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3
+        with:
+          tag_name: ${{ needs.package.outputs.release_tag }}
+          name: ${{ needs.package.outputs.release_name }}
+          files: |
+            release/*.ipa
+            release/THIRD_PARTY_NOTICES.md
+          body_path: release/release-notes.md
           draft: true
-          body_path: ${{ env.NOTES_SELECTED }}
-
-      - name: Output Release URL
-        run: |
-          echo "::notice::🚀Build completed! Release available at: https://github.com/${{ github.repository }}/releases" 

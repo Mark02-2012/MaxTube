@@ -1,6 +1,9 @@
 # ЧаВо (Часто задаваемые вопросы)
 
-[🇺🇸 English FAQ](FAQ_EN.md) | [✓] 🇷🇺 ЧаВо на Русском | [🇮🇹 FAQ in Italiano](FAQ_IT.md) | [🇵🇱 FAQ po polsku](FAQ_PL.md) 
+[🇺🇸 English FAQ](FAQ_EN.md) | [✓] 🇷🇺 ЧаВо на Русском | [🇮🇹 FAQ in Italiano](FAQ_IT.md) | [🇵🇱 FAQ po polsku](FAQ_PL.md)
+
+> [!WARNING]
+> This FAQ documents the retired YTLite-based build. See the [current platform support and build instructions](../README.md).
 
 <details>
   <summary>Какие версии iOS поддерживает YouTube Plus?</summary>
