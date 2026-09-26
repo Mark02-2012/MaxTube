@@ -118,8 +118,8 @@ on:
         type: string
 
       tweak_version:
-        description: "The version of the tweak to use. Versions that you can use are from 5.1 to 5.2.2 (no 5.2)"
-        default: "5.2.2"
+        description: "The version of the tweak to use. Versions that you can use are from 5.1 to 6.0b1 (no 5.2)"
+        default: "6.0b1"
         required: true
         type: string
 
