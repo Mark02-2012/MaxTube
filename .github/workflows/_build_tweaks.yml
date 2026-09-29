@@ -216,7 +216,7 @@ jobs:
         run: git clone --quiet --depth=1 https://github.com/bhackel/YouLoop.git
 
       - name: Clone YouMute
-        if: ${{ inputs.enable_youloop }}
+        if: ${{ inputs.enable_youmute }}
         run: git clone --quiet --depth=1 https://github.com/PoomSmart/YouMute.git
 
       - name: Build YouPiP
@@ -244,7 +244,7 @@ jobs:
           mv packages/*.deb ../ytabc.deb
 
       - name: Build YouGroupSettings
-        if: ${{ inputs.enable_youpip || inputs.enable_ytuhd || inputs.enable_yq || inputs.enable_ryd || inputs.enable_ytabc || inputs.enable_demc || inputs.enable_ytlcm || inputs.enable_VolumeBoostYT || inputs.enable_ytpf || inputs.enable_ytpfBETA }}
+        if: ${{ inputs.enable_youpip || inputs.enable_ytuhd || inputs.enable_yq || inputs.enable_ryd || inputs.enable_ytabc || inputs.enable_demc || inputs.enable_ytweaks || inputs.enable_gonerino || inputs.enable_youspeed || inputs.enable_ytlcm || inputs.enable_VolumeBoostYT || inputs.enable_ytpf || inputs.enable_ytpfBETA }}
         run: |
           cd YouGroupSettings && make clean package DEBUG=0 FINALPACKAGE=1
           mv packages/*.deb ../ygs.deb
@@ -256,7 +256,7 @@ jobs:
           mv packages/*.deb ../yq.deb
 
       - name: Build YTVideoOverlay
-        if: ${{ inputs.enable_yq || inputs.enable_youpip || inputs.enable_ytuhd || inputs.enable_youspeed || inputs.enable_YouGetCaption }}
+        if: ${{ inputs.enable_yq || inputs.enable_youpip || inputs.enable_ytuhd || inputs.enable_youspeed || inputs.enable_YouGetCaption || inputs.enable_ys || inputs.enable_youloop || inputs.enable_youmute }}
         run: |
           cd YTVideoOverlay && make clean package DEBUG=0 FINALPACKAGE=1
           mv packages/*.deb ../ytvo.deb
