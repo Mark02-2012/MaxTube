@@ -65,7 +65,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           path: repository
 
@@ -96,7 +96,7 @@ jobs:
 
       - name: Setup Theos
         if: ${{ steps.theos.outputs.cache-hit != 'true' }}
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: theos/theos
           ref: 9bc73406cf80b711ef4d02c15ff1dedc4478a275
@@ -356,7 +356,7 @@ jobs:
           mv ./*.appex ..
 
       - name: Upload built debs as artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: built-debs
           path: |
