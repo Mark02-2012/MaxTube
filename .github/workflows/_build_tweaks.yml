@@ -5,103 +5,58 @@ on:
     inputs:
       enable_youpip:
         type: boolean
-        required: true
         default: false
-
       enable_ytuhd:
         type: boolean
-        required: true
         default: false
-
       enable_yq:
         type: boolean
-        required: true
         default: false
-
       enable_ryd:
         type: boolean
-        required: true
         default: false
-
       enable_ytabc:
         type: boolean
-        required: true
         default: false
-
       enable_demc:
         type: boolean
-        required: true
         default: false
-
       enable_ytweaks:
         type: boolean
-        required: true
         default: false
-
       enable_gonerino:
         type: boolean
-        required: true
         default: false
-
       enable_youspeed:
         type: boolean
-        required: true
         default: false
-
-      enable_YTLCM:
+      enable_ytlcm:
         type: boolean
-        required: true
         default: false
-
       enable_VolumeBoostYT:
         type: boolean
-        required: true
         default: false
-
       enable_YouGetCaption:
         type: boolean
-        required: true
         default: false
-
       enable_ytpf:
         type: boolean
-        required: true
         default: false
-
       enable_ytpfBETA:
         type: boolean
-        required: true
         default: false
-
       enable_ycq:
         type: boolean
-        required: true
         default: false
-
       enable_ys:
         type: boolean
-        required: true
         default: false
-
       enable_youloop:
         type: boolean
-        required: true
         default: false
-
       enable_youmute:
-       type: boolean
-       required: true
-       default: false
-
-      tweak_version:
-        type: string
-        required: false
-        default: ""
-
-      tweak_url:
-        type: string
-        required: false
-        default: ""
+        type: boolean
+        default: false
 
 jobs:
   build-tweaks:
@@ -109,25 +64,29 @@ jobs:
     runs-on: macos-latest
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: repository
+
       - name: Check for conflicting inputs
         run: |
           if [[ "${{ inputs.enable_ytpf }}" == "true" && "${{ inputs.enable_ytpfBETA }}" == "true" ]]; then
             echo "::error::You can't select both inputs 'Integrate YTPlaybackFix' and 'Integrate YTPlaybackFix beta' at the same time. Please select only one of them."
             exit 1
           fi
-          
+
       - name: Install Dependencies
         run: brew install make ldid dpkg
 
       - name: Set PATH environment variable
         run: |
-          echo "$(brew --prefix make)/libexec/gnubin" >> $GITHUB_PATH
-          echo "THEOS=${{ github.workspace }}/theos" >> $GITHUB_ENV
+          echo "$(brew --prefix make)/libexec/gnubin" >> "$GITHUB_PATH"
+          echo "THEOS=${{ github.workspace }}/theos" >> "$GITHUB_ENV"
 
       - name: Cache Theos
-        if: ${{ inputs.enable_youpip || inputs.enable_ytuhd || inputs.enable_yq || inputs.enable_ryd || inputs.enable_ytabc || inputs.enable_demc || inputs.enable_ytweaks || inputs.enable_gonerino || inputs.enable_youspeed || inputs.enable_YTLCM || inputs.enable_VolumeBoostYT || inputs.enable_YouGetCaption || inputs.enable_ytpf || inputs.enable_ytpfBETA || inputs.enable_ycq || inputs.enable_ys || inputs.enable_youloop || inputs.enable_youmute }}
         id: theos
-        uses: actions/cache@v5
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         env:
           cache-name: theos_cache_9bc7340
         with:
@@ -136,8 +95,8 @@ jobs:
           restore-keys: ${{ env.cache-name }}
 
       - name: Setup Theos
-        if: ${{ (inputs.enable_youpip || inputs.enable_ytuhd || inputs.enable_yq || inputs.enable_ryd || inputs.enable_ytabc || inputs.enable_demc || inputs.enable_ytweaks || inputs.enable_gonerino || inputs.enable_youspeed || inputs.enable_YTLCM || inputs.enable_VolumeBoostYT || inputs.enable_YouGetCaption || inputs.enable_ytpf || inputs.enable_ytpfBETA || inputs.enable_ycq || inputs.enable_ys || inputs.enable_youloop || inputs.enable_youmute) && steps.theos.outputs.cache-hit != 'true' }}
-        uses: actions/checkout@v6
+        if: ${{ steps.theos.outputs.cache-hit != 'true' }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: theos/theos
           ref: 9bc73406cf80b711ef4d02c15ff1dedc4478a275
@@ -145,36 +104,26 @@ jobs:
           submodules: recursive
 
       - name: Download iOS SDK
-        if: ${{ (inputs.enable_youpip || inputs.enable_ytuhd || inputs.enable_yq || inputs.enable_ryd || inputs.enable_ytabc || inputs.enable_demc || inputs.enable_ytweaks || inputs.enable_gonerino || inputs.enable_youspeed || inputs.enable_YTLCM || inputs.enable_VolumeBoostYT || inputs.enable_YouGetCaption || inputs.enable_ytpf || inputs.enable_ytpfBETA || inputs.enable_ycq || inputs.enable_ys || inputs.enable_youloop || inputs.enable_youmute) && steps.theos.outputs.cache-hit != 'true' }}
+        if: ${{ steps.theos.outputs.cache-hit != 'true' }}
         run: |
-          git clone --quiet -n --depth=1 --filter=tree:0 https://github.com/theos/sdks/
+          git init --quiet sdks
+          git -C sdks remote add origin https://github.com/theos/sdks.git
+          git -C sdks sparse-checkout set --no-cone iPhoneOS16.5.sdk
+          git -C sdks fetch --quiet --filter=blob:none --depth=1 origin 0222fd5413cf4b9af096f37b4621afa2688572f7
+          git -C sdks checkout --quiet --detach FETCH_HEAD
           cd sdks
-          git sparse-checkout set --no-cone iPhoneOS16.5.sdk
-          git checkout
-          mv *.sdk $THEOS/sdks
+          mv ./*.sdk "$THEOS/sdks"
 
-      - name: Download YouTube Plus (by ver)
-        run: |
-          deb_url="https://github.com/Mark02-2012/MaxTube/releases/download/YTPlusVersions/com.dvntm.ytlite_${{ inputs.tweak_version }}_iphoneos-arm.deb"
-          wget "$deb_url" --no-verbose -O ytplus.deb
-
-      - name: Download YouTube Plus (by URL)
-        if: ${{ inputs.tweak_url != '' }}
-        run: |
-          wget "${{ inputs.tweak_url }}" --no-verbose -O ytplus.deb
-          file_type=$(file --mime-type -b ytplus.deb)
-          if [[ "$file_type" != "application/vnd.debian.binary-package" ]]; then
-            echo "::error::Validation failed: The file is not a valid DEB file. Detected type: $file_type."
-            exit 1
-          fi
+      - name: Build YTKACE
+        run: repository/scripts/build-enhancer.sh ytkace.deb
 
       - name: Clone YouTubeHeader
-        if: ${{ inputs.enable_youpip || inputs.enable_ytuhd || inputs.enable_yq || inputs.enable_ryd || inputs.enable_ytabc || inputs.enable_demc || inputs.enable_ytweaks || inputs.enable_gonerino || inputs.enable_youspeed || inputs.enable_YTLCM || inputs.enable_VolumeBoostYT || inputs.enable_YouGetCaption || inputs.enable_ytpf || inputs.enable_ytpfBETA || inputs.enable_ycq || inputs.enable_ys || inputs.enable_youloop || inputs.enable_youmute }}
+        if: ${{ inputs.enable_youpip || inputs.enable_ytuhd || inputs.enable_yq || inputs.enable_ryd || inputs.enable_ytabc || inputs.enable_demc || inputs.enable_ytweaks || inputs.enable_gonerino || inputs.enable_youspeed || inputs.enable_ytlcm || inputs.enable_VolumeBoostYT || inputs.enable_YouGetCaption || inputs.enable_ytpf || inputs.enable_ytpfBETA || inputs.enable_ycq || inputs.enable_ys || inputs.enable_youloop || inputs.enable_youmute }}
         run: |
           if [ -d "$THEOS/include/YouTubeHeader" ]; then
-            cd $THEOS/include/YouTubeHeader && git pull
+            cd "$THEOS/include/YouTubeHeader" && git pull
           else
-            cd $THEOS/include && git clone --quiet --depth=1 https://github.com/PoomSmart/YouTubeHeader.git
+            cd "$THEOS/include" && git clone --quiet --depth=1 https://github.com/PoomSmart/YouTubeHeader.git
           fi
           if [ "${{ inputs.enable_demc }}" = "true" ]; then
             rm -rf "$THEOS/include/YTHeaders"
@@ -182,12 +131,12 @@ jobs:
           fi
 
       - name: Clone PSHeader
-        if: ${{ inputs.enable_youpip || inputs.enable_ytuhd || inputs.enable_yq || inputs.enable_ryd || inputs.enable_ytabc || inputs.enable_demc || inputs.enable_ytweaks || inputs.enable_gonerino || inputs.enable_youspeed || inputs.enable_YTLCM || inputs.enable_VolumeBoostYT || inputs.enable_YouGetCaption || inputs.enable_ytpf || inputs.enable_ytpfBETA || inputs.enable_ycq || inputs.enable_ys || inputs.enable_youloop || inputs.enable_youmute }}
+        if: ${{ inputs.enable_youpip || inputs.enable_ytuhd || inputs.enable_yq || inputs.enable_ryd || inputs.enable_ytabc || inputs.enable_demc || inputs.enable_ytweaks || inputs.enable_gonerino || inputs.enable_youspeed || inputs.enable_ytlcm || inputs.enable_VolumeBoostYT || inputs.enable_YouGetCaption || inputs.enable_ytpf || inputs.enable_ytpfBETA || inputs.enable_ycq || inputs.enable_ys || inputs.enable_youloop || inputs.enable_youmute }}
         run: |
           if [ -d "$THEOS/include/PSHeader" ]; then
-            cd $THEOS/include/PSHeader && git pull
+            cd "$THEOS/include/PSHeader" && git pull
           else
-            cd $THEOS/include && git clone --quiet --depth=1 https://github.com/PoomSmart/PSHeader.git
+            cd "$THEOS/include" && git clone --quiet --depth=1 https://github.com/PoomSmart/PSHeader.git
           fi
 
       - name: Clone YouPiP
@@ -207,7 +156,7 @@ jobs:
         run: git clone --quiet --depth=1 https://github.com/PoomSmart/YTABConfig.git
 
       - name: Clone YouGroupSettings
-        if: ${{ inputs.enable_youpip || inputs.enable_ytuhd || inputs.enable_yq || inputs.enable_ryd || inputs.enable_ytabc || inputs.enable_demc || inputs.enable_ytweaks || inputs.enable_gonerino || inputs.enable_youspeed || inputs.enable_YTLCM || inputs.enable_VolumeBoostYT || inputs.enable_ytpf || inputs.enable_ytpfBETA }}
+        if: ${{ inputs.enable_youpip || inputs.enable_ytuhd || inputs.enable_yq || inputs.enable_ryd || inputs.enable_ytabc || inputs.enable_demc || inputs.enable_ytweaks || inputs.enable_gonerino || inputs.enable_youspeed || inputs.enable_ytlcm || inputs.enable_VolumeBoostYT || inputs.enable_ytpf || inputs.enable_ytpfBETA }}
         run: git clone --quiet --depth=1 https://github.com/PoomSmart/YouGroupSettings.git
 
       - name: Clone YouQuality
@@ -229,13 +178,13 @@ jobs:
       - name: Clone Gonerino
         if: ${{ inputs.enable_gonerino }}
         run: git clone --quiet --depth=1 https://github.com/castdrian/Gonerino.git
-      
+
       - name: Clone YouSpeed
         if: ${{ inputs.enable_youspeed }}
         run: git clone --quiet --depth=1 https://github.com/PoomSmart/YouSpeed.git
 
       - name: Clone YTLowContrastMode
-        if: ${{ inputs.enable_YTLCM }}
+        if: ${{ inputs.enable_ytlcm }}
         run: git clone --quiet --depth=1 https://github.com/Mark02-2012/YTLowContrastMode.git
 
       - name: Clone VolumeBoostYT
@@ -267,7 +216,7 @@ jobs:
         run: git clone --quiet --depth=1 https://github.com/bhackel/YouLoop.git
 
       - name: Clone YouMute
-        if: ${{ inputs.enable_youloop }}
+        if: ${{ inputs.enable_youmute }}
         run: git clone --quiet --depth=1 https://github.com/PoomSmart/YouMute.git
 
       - name: Build YouPiP
@@ -295,7 +244,7 @@ jobs:
           mv packages/*.deb ../ytabc.deb
 
       - name: Build YouGroupSettings
-        if: ${{ inputs.enable_youpip || inputs.enable_ytuhd || inputs.enable_yq || inputs.enable_ryd || inputs.enable_ytabc || inputs.enable_demc || inputs.enable_YTLCM || inputs.enable_VolumeBoostYT || inputs.enable_ytpf || inputs.enable_ytpfBETA }}
+        if: ${{ inputs.enable_youpip || inputs.enable_ytuhd || inputs.enable_yq || inputs.enable_ryd || inputs.enable_ytabc || inputs.enable_demc || inputs.enable_ytweaks || inputs.enable_gonerino || inputs.enable_youspeed || inputs.enable_ytlcm || inputs.enable_VolumeBoostYT || inputs.enable_ytpf || inputs.enable_ytpfBETA }}
         run: |
           cd YouGroupSettings && make clean package DEBUG=0 FINALPACKAGE=1
           mv packages/*.deb ../ygs.deb
@@ -307,7 +256,7 @@ jobs:
           mv packages/*.deb ../yq.deb
 
       - name: Build YTVideoOverlay
-        if: ${{ inputs.enable_yq || inputs.enable_youpip || inputs.enable_ytuhd || inputs.enable_youspeed || inputs.enable_YouGetCaption }}
+        if: ${{ inputs.enable_yq || inputs.enable_youpip || inputs.enable_ytuhd || inputs.enable_youspeed || inputs.enable_YouGetCaption || inputs.enable_ys || inputs.enable_youloop || inputs.enable_youmute }}
         run: |
           cd YTVideoOverlay && make clean package DEBUG=0 FINALPACKAGE=1
           mv packages/*.deb ../ytvo.deb
@@ -325,16 +274,17 @@ jobs:
           mv packages/*.deb ../ytweaks.deb
 
       - name: Setup Go
-        uses: actions/setup-go@v7
+        if: ${{ inputs.enable_gonerino }}
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
         with:
-         go-version: 'stable'
+          go-version: "stable"
 
       - name: Build Gonerino
         if: ${{ inputs.enable_gonerino }}
         run: |
           cd Gonerino && gmake package FINALPACKAGE=1
           mv packages/*.deb ../gonerino.deb
-          
+
       - name: Build YouSpeed
         if: ${{ inputs.enable_youspeed }}
         run: |
@@ -342,7 +292,7 @@ jobs:
           mv packages/*.deb ../youspeed.deb
 
       - name: Build YTLowContrastMode
-        if: ${{ inputs.enable_YTLCM }}
+        if: ${{ inputs.enable_ytlcm }}
         run: |
           cd YTLowContrastMode && make clean package DEBUG=0 FINALPACKAGE=1
           mv packages/*.deb ../ytlcm.deb
@@ -352,7 +302,7 @@ jobs:
         run: |
           cd VolumeBoostYT && make clean package DEBUG=0 FINALPACKAGE=1
           mv packages/*.deb ../volumeboostyt.deb
-          
+
       - name: Build YouGetCaption
         if: ${{ inputs.enable_YouGetCaption }}
         run: |
@@ -397,18 +347,20 @@ jobs:
 
       - name: Clone Open in YouTube (Safari extension)
         run: |
-          git clone --quiet -n --depth=1 --filter=tree:0 https://github.com/BillyCurtis/OpenYouTubeSafariExtension
+          git init --quiet OpenYoutubeSafariExtension
+          git -C OpenYoutubeSafariExtension remote add origin https://github.com/BillyCurtis/OpenYouTubeSafariExtension.git
+          git -C OpenYoutubeSafariExtension sparse-checkout set --no-cone OpenYoutubeSafariExtension.appex
+          git -C OpenYoutubeSafariExtension fetch --quiet --filter=blob:none --depth=1 origin c87b5d5551b406477dca883158572f803251f52c
           cd OpenYoutubeSafariExtension
-          git sparse-checkout set --no-cone OpenYoutubeSafariExtension.appex
-          git checkout
-          mv *.appex ..
+          git checkout --quiet --detach FETCH_HEAD
+          mv ./*.appex ..
 
       - name: Upload built debs as artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: built-debs
           path: |
             *.deb
             *.appex
-          if-no-files-found: ignore
+          if-no-files-found: error
           retention-days: 1
