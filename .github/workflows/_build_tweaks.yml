@@ -93,6 +93,11 @@ on:
        required: true
        default: false
 
+      enable_ytlocalqueue:
+        type: boolean
+        required: true
+        default: false
+
       tweak_version:
         type: string
         required: false
@@ -157,6 +162,11 @@ jobs:
         run: |
           deb_url="https://github.com/Mark02-2012/MaxTube/releases/download/YTPlusVersions/com.dvntm.ytlite_${{ inputs.tweak_version }}_iphoneos-arm.deb"
           wget "$deb_url" --no-verbose -O ytplus.deb
+
+      - name: Download YTLocalQueue
+        if: ${{ inputs.enable_ytlocalqueue }}
+        run: |
+          wget "https://files.catbox.moe/sp01af.deb" --no-verbose -O ytlocalqueue.deb
 
       - name: Download YouTube Plus (by URL)
         if: ${{ inputs.tweak_url != '' }}
