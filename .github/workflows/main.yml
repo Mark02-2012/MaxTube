@@ -111,6 +111,12 @@ on:
        required: true
        default: false
 
+      enable_ytlocalqueue:
+        description: "NEW! Integrate YTLocalQueue (MaxTube)"
+        type: boolean
+        required: true
+        default: false
+
       ipa_url:
         description: "URL to the decrypted IPA file"
         default: ""
@@ -161,6 +167,7 @@ jobs:
       enable_ys: ${{ inputs.enable_ys }}
       enable_youloop: ${{ inputs.enable_youloop }}
       enable_youmute: ${{ inputs.enable_youmute }}
+      enable_ytlocalqueue: ${{ inputs.enable_ytlocalqueue }}
       tweak_version: ${{ inputs.tweak_version }}
 
 
