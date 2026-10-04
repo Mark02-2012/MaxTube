@@ -100,13 +100,13 @@ on:
        default: false
 
       enable_youloop:
-       description: "NEW! Integrate YouLoop (MaxTube)"
+       description: "Integrate YouLoop (MaxTube)"
        type: boolean
        required: true
        default: false
 
       enable_youmute:
-       description: "NEW! Integrate YouMute (MaxTube)"
+       description: "Integrate YouMute (MaxTube)"
        type: boolean
        required: true
        default: false
