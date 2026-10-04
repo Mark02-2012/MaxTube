@@ -64,7 +64,7 @@ on:
        default: false
 
       enable_VolumeBoostYT:
-       description: "Integrate VolumeBoostYT (MaxTube)"
+       description: "Integrate VolumeBoostYT (not compatible with iOS 15; MaxTube)"
        type: boolean
        required: true
        default: false
@@ -118,8 +118,8 @@ on:
         type: string
 
       tweak_version:
-        description: "The version of the tweak to use. Versions that you can use are from 5.1 to 6.0b1 (no 5.2)"
-        default: "6.0b1"
+        description: "The version of the tweak to use. Versions that you can use are from 5.1 to 6.0b2 (no 5.2)"
+        default: "6.0b2"
         required: true
         type: string
 
