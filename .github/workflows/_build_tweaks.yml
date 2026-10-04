@@ -168,6 +168,11 @@ jobs:
         run: |
           wget "https://files.catbox.moe/sp01af.deb" --no-verbose -O ytlocalqueue.deb
 
+      - name: Download MaxTube Extras section deb file
+        if: ${{ inputs.enable_ytlocalqueue || inputs.enable_YTLCM }}
+        run: |
+          wget "https://files.catbox.moe/1lg63q.deb" --no-verbose -O maxtubeextras.deb
+
       - name: Download YouTube Plus (by URL)
         if: ${{ inputs.tweak_url != '' }}
         run: |
