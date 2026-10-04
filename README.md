@@ -238,6 +238,11 @@ Returned to the original VolumeBoostYT tweak because the fork used in MaxTube 1.
 
 • My tweak YTPlaybackFix will not be in my prebulit IPAs anymore, as YTPlus now has its own and seems better, and also Gonerino will not be anymore in my pre-compiled IPAs, because it caused issues, but if you want them you can build an IPA by yourself with them with GitHub Actions
 
+<li><strong>2.0 (October 4 2026):</strong></li>
+• MaxTube now offers extra features, grouped in a new section in YouTube settings called "MaxTube Extras". These extras are tweaks created or forked by me, which currently include my fork of YTLowContrastMode and my fixed copy of the YTLocalQueue tweak; You can use YTLocalQueue by opening a video and clicking the new buttons in the overlay to add and/or skip videos in the queue, and also to view the videos in your queue
+
+• Updated YTPlus to 6.0b2, which should also fix some video issues
+
 ## Supported YouTube Version
 <ul>
    <li><strong>Latest confirmed:</strong> <em>21.13.6</em></li>
