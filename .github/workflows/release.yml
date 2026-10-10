@@ -11,6 +11,15 @@ on:
         description: "Direct URL to a decrypted YouTube tvOS 4.54.01 IPA (optional)"
         required: false
         type: string
+      tvos_video_decoder:
+        description: "tvOS video decoder: hardware, auto, or h264; see the model table in docs/INSTALL.md"
+        required: true
+        type: choice
+        options:
+          - hardware
+          - auto
+          - h264
+        default: hardware
       release_title:
         description: "Release title; generated from packaged versions when empty"
         required: false
@@ -158,12 +167,14 @@ jobs:
         run: brew install uv
 
       - name: Package Apple TV IPA
+        env:
+          TVOS_VIDEO_DECODER: ${{ inputs.tvos_video_decoder }}
         run: |
           source config/mutube.env
           short_revision="${MUTUBE_REVISION:0:7}"
           scripts/package-tvos.sh \
             youtube-tvos.ipa \
-            "release/MaxTube_tvOS_YouTube_${MUTUBE_YOUTUBE_VERSION}_MuTube_${short_revision}.ipa"
+            "release/MaxTube_tvOS_YouTube_${MUTUBE_YOUTUBE_VERSION}_MuTube_${short_revision}_${TVOS_VIDEO_DECODER}.ipa"
 
       - name: Upload Apple TV release artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

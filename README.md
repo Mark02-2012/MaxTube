@@ -53,6 +53,11 @@ MuTube upstream reports testing on Apple TV 4K. This repository's package is
 also verified on Apple TV HD: automatic provisioning, signing, installation,
 launch, and the pinned TizenTube configuration all completed successfully.
 
+Apple TV builds take a video decoder setting: `hardware` keeps MuTube's HDR
+patches for Apple TV 4K, `auto` keeps YouTube's own VP9 hardware check, and
+`h264` makes YouTube play H.264 instead of VP9 for Apple TV HD. See the model
+table in [docs/INSTALL.md](docs/INSTALL.md#choose-the-apple-tv-video-decoder).
+
 ```mermaid
 flowchart LR
     S[Pinned YTKACE source] --> D[Rootless DEB]

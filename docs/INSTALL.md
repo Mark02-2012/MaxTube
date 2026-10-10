@@ -13,8 +13,31 @@ that account-specific signature and bundle identifier are applied.
 | Apple TV | `MaxTube_tvOS_*.ipa` | The base IPA minimum; current verified base is tvOS 13.0 |
 
 The Apple TV build is verified on Apple TV HD with tvOS 26.6. Its packager
-removes the base app's model allowlist, so the same artifact can be signed for
-Apple TV HD and supported Apple TV 4K hardware.
+removes the base app's model allowlist, so it can be signed for Apple TV HD and
+supported Apple TV 4K hardware. Pick the video decoder build for your model.
+
+## Choose the Apple TV video decoder
+
+The tvOS artifact name ends in the decoder setting it was built with:
+`MaxTube_tvOS_*_hardware.ipa`, `MaxTube_tvOS_*_auto.ipa`, or
+`MaxTube_tvOS_*_h264.ipa`.
+
+| Setting | What it does |
+| --- | --- |
+| `hardware` (default) | Applies MuTube's HDR patches: YouTube skips its VP9 hardware decoder check, allows VP9 4K60, and always requests HDR and frame rate display switching. |
+| `auto` | Keeps YouTube's own check. With a VP9 hardware decoder, VP9 plays up to 1440p, or 4K at 30 fps. Without one, VP9 is limited to 720p, or 1080p at 30 fps, and other streams use H.264. HDR VP9 is offered only when tvOS reports the device eligible for HDR playback. |
+| `h264` | Keeps YouTube's own check, but reports VP9 as unsupported, so YouTube plays H.264 up to 1080p. Only VP9 HDR, which tvOS offers only to HDR-capable devices, can still play. |
+
+| Model | Identifier | Chip | Setting | Status |
+| --- | --- | --- | --- | --- |
+| Apple TV HD | `AppleTV5,3` | A8 | `h264` | Verified on tvOS 26.6: videos play as H.264 (`avc1`). With `hardware`, video lagged, stuttered, and showed artifacts. |
+| Apple TV 4K (1st generation) | `AppleTV6,2` | A10X | `hardware` | Not tested. Use `auto` or `h264` if video lags. |
+| Apple TV 4K (2nd generation) | `AppleTV11,1` | A12 | `hardware` | Not tested. Use `auto` or `h264` if video lags. |
+| Apple TV 4K (3rd generation) | `AppleTV14,1` | A15 | `hardware` | MuTube upstream tested 4K HDR playback. |
+
+Choose the setting with the `video_decoder` input of **Create MaxTube tvOS
+app**, the `tvos_video_decoder` input of **Publish multi-platform MaxTube
+release**, or `TVOS_VIDEO_DECODER` for a local build.
 
 ## Free Apple account
 
@@ -114,6 +137,8 @@ DEVELOPER_DIR=/Applications/Xcode-27.0.0.app/Contents/Developer \
   just package-tvos /path/to/YouTube-tvOS-4.54.01.ipa
 ```
 
+For Apple TV HD, add `TVOS_VIDEO_DECODER=h264` before `just package-tvos`.
+
 Then sign/install the resulting IPA using the applicable section above.
 
 ## Troubleshooting
@@ -126,5 +151,7 @@ Then sign/install the resulting IPA using the applicable section above.
   after seven days.
 - **Device is unavailable:** wake the Apple TV, keep it on the same network,
   and confirm that it remains paired.
+- **Video lags, stutters, or shows artifacts on Apple TV:** rebuild with the
+  `h264` video decoder; see the decoder table above.
 - **Different app appears instead of updating:** reuse the same
   `TVOS_BUNDLE_ID` so tvOS recognizes the installation as the same app.

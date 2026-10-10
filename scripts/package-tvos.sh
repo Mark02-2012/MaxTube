@@ -10,6 +10,28 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=../config/mutube.env
 source "$ROOT/config/mutube.env"
 
+# hardware: force Cobalt's hardware VP9, 4K60, and HDR display paths (Apple TV 4K).
+# auto: keep Cobalt's own VP9 hardware decoder check.
+# h264: report VP9 as unsupported so YouTube plays H.264 (Apple TV HD).
+VIDEO_DECODER="${TVOS_VIDEO_DECODER:-hardware}"
+case "$VIDEO_DECODER" in
+  hardware)
+    COBALT_PATCH_LIST=COBALT_HDR_PATCHES
+    ;;
+  auto)
+    COBALT_PATCH_LIST="[]"
+    ;;
+  h264)
+    # Cobalt's video support check branches to its VP9 path when the codec is
+    # kSbMediaVideoCodecVp9 (8); send that branch to the unsupported exit.
+    COBALT_PATCH_LIST='[{"name": "cobalt_vp9_unsupported", "va": 0x10114F794, "expect": ("b.eq", "#0x10114f7e0"), "replacement": 0x54FFFCE0}]'
+    ;;
+  *)
+    echo "TVOS_VIDEO_DECODER must be hardware, auto, or h264, not: $VIDEO_DECODER" >&2
+    exit 2
+    ;;
+esac
+
 command -v git >/dev/null
 command -v python3 >/dev/null
 command -v uv >/dev/null
@@ -70,6 +92,20 @@ if ! grep -Fq "capstone==$MUTUBE_CAPSTONE_VERSION" "$SOURCE/patcher.py" || \
   echo "failed to pin MuTube Python dependencies" >&2
   exit 1
 fi
+PATCH_LOOP="    for patch in $COBALT_PATCH_LIST:"
+python3 - "$SOURCE/patcher.py" "$PATCH_LOOP" <<'PY'
+import sys
+
+path, loop = sys.argv[1:]
+original = "    for patch in COBALT_HDR_PATCHES:\n"
+with open(path) as handle:
+    source = handle.read()
+if source.count(original) != 1:
+    raise SystemExit("failed to select MuTube video decoder patches")
+with open(path, "w") as handle:
+    handle.write(source.replace(original, loop + "\n"))
+PY
+echo "video decoder: $VIDEO_DECODER"
 
 uv run --script "$SOURCE/patcher.py" \
   --in "$INPUT" \

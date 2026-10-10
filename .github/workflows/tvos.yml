@@ -7,6 +7,15 @@ on:
         description: "Direct URL to a decrypted YouTube tvOS 4.54.01 IPA"
         required: true
         type: string
+      video_decoder:
+        description: "Video decoder: hardware, auto, or h264; see the model table in docs/INSTALL.md"
+        required: true
+        type: choice
+        options:
+          - hardware
+          - auto
+          - h264
+        default: hardware
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -43,11 +52,13 @@ jobs:
 
       - name: Read artifact metadata
         id: metadata
+        env:
+          TVOS_VIDEO_DECODER: ${{ inputs.video_decoder }}
         run: |
           source config/mutube.env
           short_revision="${MUTUBE_REVISION:0:7}"
           {
-            echo "ipa=MaxTube_tvOS_YouTube_${MUTUBE_YOUTUBE_VERSION}_MuTube_${short_revision}.ipa"
+            echo "ipa=MaxTube_tvOS_YouTube_${MUTUBE_YOUTUBE_VERSION}_MuTube_${short_revision}_${TVOS_VIDEO_DECODER}.ipa"
             echo "release_tag=mutube-${short_revision}-youtube-${MUTUBE_YOUTUBE_VERSION}-${{ github.run_number }}"
             echo "release_name=MaxTube tvOS: MuTube ${short_revision} with YouTube ${MUTUBE_YOUTUBE_VERSION}"
           } >> "$GITHUB_OUTPUT"
@@ -55,6 +66,7 @@ jobs:
       - name: Package IPA
         env:
           OUTPUT_IPA: ${{ steps.metadata.outputs.ipa }}
+          TVOS_VIDEO_DECODER: ${{ inputs.video_decoder }}
         run: scripts/package-tvos.sh youtube-tvos.ipa "release/$OUTPUT_IPA"
 
       - name: Prepare release notes
