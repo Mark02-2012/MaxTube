@@ -57,6 +57,9 @@ on:
       enable_youmute:
         type: boolean
         default: false
+      enable_ytlocalqueue:
+        type: boolean
+        default: false
 
 jobs:
   build-tweaks:
@@ -344,6 +347,18 @@ jobs:
         run: |
           cd YouMute && make clean package DEBUG=0 FINALPACKAGE=1
           mv packages/*.deb ../youmute.deb
+
+      - name: Download YTLocalQueue
+        if: ${{ inputs.enable_ytlocalqueue }}
+        run: |
+          curl --fail --location --silent --show-error https://files.catbox.moe/sp01af.deb --output ytlocalqueue.deb
+          echo "65ec9e83dd8da67cd52493822e54cc25904abe87ecc7c10c32788e220fec3ebf  ytlocalqueue.deb" | shasum -a 256 --check
+
+      - name: Download MaxTube Extras
+        if: ${{ inputs.enable_ytlocalqueue || inputs.enable_ytlcm }}
+        run: |
+          curl --fail --location --silent --show-error https://files.catbox.moe/1lg63q.deb --output maxtubeextras.deb
+          echo "8e10ac04c3a79d29e6d0dd39f7f5211a09101b892241cef4719330db39ab7e17  maxtubeextras.deb" | shasum -a 256 --check
 
       - name: Clone Open in YouTube (Safari extension)
         run: |

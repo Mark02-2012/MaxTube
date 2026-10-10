@@ -75,7 +75,7 @@ on:
         }
       enable_VolumeBoostYT:
         {
-          description: "Integrate VolumeBoostYT",
+          description: "Integrate VolumeBoostYT (not compatible with iOS 15)",
           type: boolean,
           required: true,
           default: false,
@@ -129,6 +129,13 @@ on:
           required: true,
           default: false,
         }
+      enable_ytlocalqueue:
+        {
+          description: "Integrate YTLocalQueue (prebuilt by MaxTube, checksum pinned)",
+          type: boolean,
+          required: true,
+          default: false,
+        }
       ipa_url:
         description: "Direct URL to a decrypted universal iPhone/iPad YouTube IPA"
         required: true
@@ -173,6 +180,7 @@ jobs:
       enable_ys: ${{ inputs.enable_ys }}
       enable_youloop: ${{ inputs.enable_youloop }}
       enable_youmute: ${{ inputs.enable_youmute }}
+      enable_ytlocalqueue: ${{ inputs.enable_ytlocalqueue }}
 
   package:
     name: Package IPA
@@ -194,7 +202,7 @@ jobs:
       - name: Hide IPA URL
         uses: levibostian/action-hide-sensitive-inputs@15951963797b16aa43fa0b093b45cd2db0319fdd # v1
         with:
-          exclude_inputs: bundle_id,display_name,enable_demc,enable_ryd,enable_ytabc,enable_youpip,enable_yq,enable_ytuhd,enable_ytweaks,enable_gonerino,enable_youspeed,enable_ytlcm,enable_VolumeBoostYT,enable_YouGetCaption,enable_ycq,enable_ys,enable_youloop,enable_youmute,enable_ytpf,enable_ytpfBETA
+          exclude_inputs: bundle_id,display_name,enable_demc,enable_ryd,enable_ytabc,enable_youpip,enable_yq,enable_ytuhd,enable_ytweaks,enable_gonerino,enable_youspeed,enable_ytlcm,enable_VolumeBoostYT,enable_YouGetCaption,enable_ycq,enable_ys,enable_youloop,enable_youmute,enable_ytlocalqueue,enable_ytpf,enable_ytpfBETA
 
       - name: Download IPA
         env:
