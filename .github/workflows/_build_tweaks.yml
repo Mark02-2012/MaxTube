@@ -163,10 +163,10 @@ jobs:
           deb_url="https://github.com/Mark02-2012/MaxTube/releases/download/YTPlusVersions/com.dvntm.ytlite_${{ inputs.tweak_version }}_iphoneos-arm.deb"
           wget "$deb_url" --no-verbose -O ytplus.deb
 
-      - name: Download YTLocalQueue
+      - name: Download YTLocalQueue 1.1.0
         if: ${{ inputs.enable_ytlocalqueue }}
         run: |
-          wget "https://files.catbox.moe/sp01af.deb" --no-verbose -O ytlocalqueue.deb
+          wget "https://files.catbox.moe/pfdvk4.deb" --no-verbose -O ytlocalqueue.deb
 
       - name: Download MaxTube Extras section deb file
         if: ${{ inputs.enable_ytlocalqueue || inputs.enable_YTLCM }}
