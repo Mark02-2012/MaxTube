@@ -166,7 +166,7 @@ jobs:
       - name: Download YTLocalQueue 1.1.0
         if: ${{ inputs.enable_ytlocalqueue }}
         run: |
-          wget "https://files.catbox.moe/pfdvk4.deb" --no-verbose -O ytlocalqueue.deb
+          wget "https://files.catbox.moe/8u71aq.deb" --no-verbose -O ytlocalqueue.deb
 
       - name: Download MaxTube Extras section deb file
         if: ${{ inputs.enable_ytlocalqueue || inputs.enable_YTLCM }}
