@@ -166,7 +166,7 @@ jobs:
       - name: Download YTLocalQueue 1.0.0
         if: ${{ inputs.enable_ytlocalqueue }}
         run: |
-          wget "https://files.catbox.moe/glhygu.deb" --no-verbose -O ytlocalqueue.deb
+          wget "https://www.dropbox.com/scl/fi/71bdllk4de68yxtjca06l/com.mark02-2012.ytlocalqueue_1.0.0_iphoneos-arm64-1.deb?rlkey=wtr2t5d0y7hpvo3d3qlwgscv0&st=vbvfipio&dl=1" --no-verbose -O ytlocalqueue.deb
 
       - name: Download MaxTube Extras 1.2.0 section deb file
         if: ${{ inputs.enable_ytlocalqueue || inputs.enable_YTLCM || inputs.enable_ytpfBETA || inputs.enable_ytpf }}
