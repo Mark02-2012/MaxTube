@@ -168,10 +168,10 @@ jobs:
         run: |
           wget "https://files.catbox.moe/glhygu.deb" --no-verbose -O ytlocalqueue.deb
 
-      - name: Download MaxTube Extras 1.1.0 section deb file
-        if: ${{ inputs.enable_ytlocalqueue || inputs.enable_YTLCM }}
+      - name: Download MaxTube Extras 1.2.0 section deb file
+        if: ${{ inputs.enable_ytlocalqueue || inputs.enable_YTLCM || inputs.enable_ytpfBETA || inputs.enable_ytpf }}
         run: |
-          wget "https://files.catbox.moe/ykfhq9.deb" --no-verbose -O maxtubeextras.deb
+          wget "https://www.dropbox.com/scl/fi/ryi2oxxxdb0le89gl8ztw/com.mark02-2012.maxtubeextras_1.2.0_iphoneos-arm64.deb?rlkey=tnuvsnwoivb12067vtt657oxc&st=mo67ruxt&dl=1" --no-verbose -O maxtubeextras.deb
 
       - name: Download YouTube Plus (by URL)
         if: ${{ inputs.tweak_url != '' }}
