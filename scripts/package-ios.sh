@@ -89,7 +89,15 @@ cyan \
   -b "$BUNDLE_ID"
 
 unzip -tq "$OUTPUT" >/dev/null
-if ! unzip -l "$OUTPUT" | grep -q 'YTKACE\.dylib'; then
+if ! python3 - "$OUTPUT" <<'PYZIP'
+import sys
+import zipfile
+
+with zipfile.ZipFile(sys.argv[1]) as archive:
+    present = any(name.endswith('/YTKACE.dylib') for name in archive.namelist())
+raise SystemExit(0 if present else 1)
+PYZIP
+then
   echo "packaged IPA does not contain YTKACE.dylib" >&2
   exit 1
 fi
