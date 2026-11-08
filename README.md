@@ -16,9 +16,12 @@ cancellation, cleanup, and iPad presentation paths.
 
 ## Latest status
 
-- iPhone and iPad packaging uses YTKACE 1.1.5 from pinned source. Upstream
+- iPhone and iPad packaging uses YTKACE 1.1.5 from pinned source or a
+  checksum-verified official release package. Upstream
   targets YouTube 21.44.4 for iOS/iPadOS 17 or newer and 21.33.6 for iOS/iPadOS
   16. Tweak packages support iOS/iPadOS 15.0 or the YouTube base minimum when higher.
+- YouTube 21.44.4 with YTKACE 1.1.5 is user-confirmed working on iPhone 13 Pro
+  running iOS 27.2, installed over an older modified YouTube app.
 - Apple TV packaging is physically verified on Apple TV HD (`AppleTV5,3`)
   running tvOS 26.6. MuTube and TizenTube loaded successfully, including their
   ad-block and SponsorBlock configuration.
@@ -71,6 +74,42 @@ flowchart LR
     M --> A
     A --> R[GitHub release artifacts]
 ```
+
+## Quick local installation
+
+On macOS with full Xcode selected, install the packaging tools once:
+
+```sh
+just setup
+```
+
+Add your Apple account in **Xcode → Settings → Accounts**, enable Developer
+Mode, and pair the destination device. Then package, sign, update, and launch
+from your own decrypted base IPA with one command:
+
+```sh
+just deploy-ios "/path/to/YouTube_21.44.4_ios_decrypted.ipa"
+# Apple TV HD: use h264; for other models see the decoder table below.
+TVOS_VIDEO_DECODER=h264 just deploy-tvos "/path/to/YouTube-tvOS-4.54.01.ipa"
+```
+
+The iOS command downloads the official YTKACE 1.1.5 rootless DEB and checks
+its pinned SHA-256. It does not require Theos. Both commands select a paired
+physical device and signing team, reuse an existing YouTube bundle ID when
+unambiguous, validate the profile, sign nested code, and save the signed IPA
+under `dist/` before installation. No uninstall is performed. iPad uses the
+same iOS command; YouTube Music is not supported.
+
+For an already patched IPA, use `just install-ios /path/to/MaxTube.ipa` or
+`just install-tvos /path/to/MaxTube-tvOS.ipa`. Use `just sign-ios` or
+`just sign-tvos` with the same arguments to save a signed IPA without installing.
+All four commands accept an optional signed-output path as their second argument.
+
+If more than one device, team, or YouTube app is found, select with
+`IOS_DEVICE_ID`, `IOS_TEAM_ID`, and `IOS_BUNDLE_ID` (or the `TVOS_` equivalents).
+For a custom app identifier, set the bundle ID explicitly to update that app.
+Expired Xcode logins require signing back in once, then rerunning the command.
+See [docs/INSTALL.md](docs/INSTALL.md) for details and renewal.
 
 ## Local build and packaging
 
@@ -135,10 +174,10 @@ just install-tvos \
 ```
 
 The command uses Xcode's CLI to register the paired Apple TV and refresh a
-development profile, changes the app identifier to
-`com.xsyetopz.maxtube.tvos`, signs nested code and the app, installs it with
+development profile, reuses the installed app identifier (defaulting to
+`com.xsyetopz.maxtube.tvos` on a first install), signs nested code and the app, installs it with
 `devicectl`, and launches it. `TVOS_TEAM_ID`, `TVOS_DEVICE_ID`, and
-`TVOS_BUNDLE_ID` override the private-fork defaults.
+`TVOS_BUNDLE_ID` override automatic selection.
 
 The same command supports a free Apple Personal Team. Add the Apple account to
 Xcode once, pair one physical Apple TV, and run the command. Free provisioning
@@ -220,8 +259,9 @@ this fork continues to build YTKACE from pinned source.
 
 ## Updating pinned components
 
-The repository, revision, and expected package version are defined once in
-[`config/ytkace.env`](config/ytkace.env). Update all three together and run:
+The repository, source revision, expected package version, and official rootless
+release DEB SHA-256 are defined in [`config/ytkace.env`](config/ytkace.env).
+Update the version, revision, and release checksum together and run:
 
 ```sh
 just check

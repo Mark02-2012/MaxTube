@@ -4,6 +4,85 @@ GitHub releases contain unsigned IPAs. Every user must sign an IPA with their
 own Apple account before installation. The published binary is identical until
 that account-specific signature and bundle identifier are applied.
 
+## One-command local installation
+
+Install full Xcode and select it as the active developer directory. Install
+Homebrew and `just`, then run from the repository root:
+
+```sh
+just setup
+```
+
+This installs `dpkg`, `ldid`, and `uv`, and creates a repository-local environment
+for the pinned Cyan packager. No shell activation or Theos setup is required.
+Add your Apple account in **Xcode → Settings → Accounts**, enable Developer
+Mode on the destination device, and pair it with this Mac.
+
+Provide a decrypted base IPA that you are allowed to modify:
+
+```sh
+just deploy-ios "/path/to/YouTube_21.44.4_ios_decrypted.ipa"
+TVOS_VIDEO_DECODER=h264 just deploy-tvos "/path/to/YouTube-tvOS-4.54.01.ipa"
+```
+
+The iOS path supports iPhone and iPad, downloads the pinned official YTKACE
+rootless package, verifies its SHA-256, and injects it into your base IPA.
+It supports YouTube, not YouTube Music. The tvOS path uses the pinned MuTube
+patcher and requires exactly YouTube 4.54.01. Set the decoder for the model
+using the table below (`h264` for Apple TV HD).
+
+Both commands provision with your configured Apple account, sign the app and
+nested libraries/frameworks, verify signatures, save a signed IPA, install,
+and launch. The defaults are `dist/MaxTube-iOS-signed.ipa` and
+`dist/MaxTube-tvOS-signed.ipa`; pass a second argument to change the output.
+The command prints profile expiration so you know when renewal is due.
+
+For an existing patched IPA, signing and renewal do not require rebuilding:
+
+```sh
+just install-ios /path/to/MaxTube.ipa
+just install-tvos /path/to/MaxTube-tvOS.ipa
+# Save a signed IPA without installing or launching:
+just sign-ios /path/to/MaxTube.ipa
+just sign-tvos /path/to/MaxTube-tvOS.ipa
+```
+
+These sign/install commands require an IPA without embedded extensions or
+watch apps, since those need separate provisioning. The MaxTube iOS packager
+removes them automatically. Optional `.appex` packages must be removed or
+signed separately before using these installers.
+
+### Selecting a device, team, or existing app
+
+The installer chooses the single paired physical device for the requested
+platform and the single team with a valid Apple Development signing identity.
+It ignores simulators. Run `just devices` to list device names and UDIDs.
+Set overrides when there are multiple matches:
+
+```sh
+IOS_TEAM_ID=YOURTEAMID \
+IOS_DEVICE_ID=YOUR_DEVICE_UDID \
+IOS_BUNDLE_ID=com.example.existing.youtube \
+  just deploy-ios /path/to/YouTube.ipa
+```
+
+Use `TVOS_TEAM_ID`, `TVOS_DEVICE_ID`, and `TVOS_BUNDLE_ID` for Apple TV.
+`APP_DISPLAY_NAME` controls the displayed app name, and `DEVELOPER_DIR`
+selects a different Xcode installation.
+
+An existing recognized YouTube bundle ID is reused automatically. For a
+custom identifier, supply the bundle ID explicitly. If multiple YouTube apps
+are found, the installer stops and asks you to select one. On a first install
+it uses `com.xsyetopz.maxtube.ios` or `com.xsyetopz.maxtube.tvos`.
+It never uninstalls the existing app. Reusing the same bundle ID and team lets
+Apple update the app in place; changing them can create a separate app or
+cause installation to be rejected.
+
+YouTube 21.44.4 with YTKACE 1.1.5 was installed over YouTube 21.16.2 on an
+iPhone 13 Pro running iOS 27.2, and the user confirmed it works. Apple TV HD
+validation is described below. The shared installer was additionally checked
+in sign-only mode against the paired iPhone.
+
 ## Choose the artifact
 
 | Device | Release artifact | Minimum system |
@@ -57,15 +136,10 @@ at least every seven days. These limits come from Apple's
 
 ### iPhone and iPad
 
-1. Enable Developer Mode on the device and connect it to the Mac once.
-2. Download `MaxTube_iOS-iPadOS_*.ipa` from the GitHub release.
-3. Use an IPA sideloading tool that signs with the user's Apple account, select
-   the connected device, and install the IPA.
-4. Repeat the signing/installation before the seven-day profile expires.
-
-The signing tool must preserve support for both device families and sign any
-embedded extension as well as the main app. A paid signing certificate is not
-required for personal use.
+Use `just deploy-ios` with a decrypted base or `just install-ios` with a
+patched IPA as shown above. Rerun `just install-ios` with the saved signed IPA
+before its profile expires. Xcode refreshes the profile and the installer
+updates the app in place with the same bundle ID.
 
 ### Apple TV
 
@@ -143,8 +217,13 @@ Then sign/install the resulting IPA using the applicable section above.
 
 ## Troubleshooting
 
-- **No Apple Development team detected:** add the Apple account in Xcode once,
-  or set `TVOS_TEAM_ID` explicitly.
+- **No single Apple Development team detected:** add the Apple account in Xcode
+  and let Xcode create a development signing certificate, or select an existing
+  team with `IOS_TEAM_ID` / `TVOS_TEAM_ID`.
+- **Xcode login rejected:** sign back in under Xcode → Settings → Accounts and
+  rerun the same command. Credentials are managed by Xcode.
+- **More than one YouTube app detected:** set `IOS_BUNDLE_ID` / `TVOS_BUNDLE_ID`
+  to the exact installed app identifier you want to update.
 - **More than one Apple TV detected:** set `TVOS_DEVICE_ID` to the intended
   device UDID.
 - **Profile expired:** rerun `just install-tvos`; Personal Team profiles expire

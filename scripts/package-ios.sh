@@ -6,7 +6,11 @@ if [[ $# -lt 3 ]]; then
   exit 2
 fi
 
-command -v cyan >/dev/null
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+if ! command -v cyan >/dev/null && [[ -x "$ROOT/dist/packaging-venv/bin/cyan" ]]; then
+  export PATH="$ROOT/dist/packaging-venv/bin:$PATH"
+fi
+command -v cyan >/dev/null || { echo "Missing cyan; run just setup first." >&2; exit 1; }
 command -v python3 >/dev/null
 command -v unzip >/dev/null
 command -v zip >/dev/null
@@ -57,6 +61,9 @@ with open(path, "rb") as handle:
 platforms = info.get("CFBundleSupportedPlatforms", [])
 if "iPhoneOS" not in platforms:
     raise SystemExit(f"unsupported base platform: {platforms!r}; expected iPhoneOS")
+
+if info.get("CFBundleExecutable") != "YouTube":
+    raise SystemExit("expected the YouTube app; YouTube Music is not supported by YTKACE")
 
 families = set(info.get("UIDeviceFamily", []))
 if not {1, 2}.issubset(families):

@@ -108,6 +108,21 @@ with zipfile.ZipFile(output, 'a') as archive:
             info = plistlib.loads(archive.read("Payload/YouTube.app/Info.plist"))
             self.assertEqual(info["MinimumOSVersion"], "17.0")
 
+    def test_rejects_youtube_music(self):
+        ipa = self._make_ipa(platforms=["iPhoneOS"], families=[1, 2])
+        with zipfile.ZipFile(ipa) as archive:
+            entries = {name: archive.read(name) for name in archive.namelist()}
+        info = plistlib.loads(entries["Payload/YouTube.app/Info.plist"])
+        info["CFBundleExecutable"] = "YouTubeMusic"
+        entries["Payload/YouTube.app/Info.plist"] = plistlib.dumps(info)
+        with zipfile.ZipFile(ipa, "w") as archive:
+            for name, data in entries.items():
+                archive.writestr(name, data)
+        result, output = self._run(ipa)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("YouTube Music is not supported", result.stderr)
+        self.assertFalse(output.exists())
+
     def test_rejects_tvos_base(self):
         ipa = self._make_ipa(platforms=["AppleTVOS"], families=[3])
 
