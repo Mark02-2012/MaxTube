@@ -348,17 +348,17 @@ jobs:
           cd YouMute && make clean package DEBUG=0 FINALPACKAGE=1
           mv packages/*.deb ../youmute.deb
 
-      - name: Download YTLocalQueue
+      - name: Download YTLocalQueue 1.0.0
         if: ${{ inputs.enable_ytlocalqueue }}
         run: |
-          curl --fail --location --silent --show-error https://files.catbox.moe/sp01af.deb --output ytlocalqueue.deb
-          echo "65ec9e83dd8da67cd52493822e54cc25904abe87ecc7c10c32788e220fec3ebf  ytlocalqueue.deb" | shasum -a 256 --check
+          curl --fail --location --silent --show-error https://files.catbox.moe/glhygu.deb --output ytlocalqueue.deb
+          echo "a8b66904c84ddab3c213c2463b4d734521b10e2527851b0081c6f4fac49d8d67  ytlocalqueue.deb" | shasum -a 256 --check
 
-      - name: Download MaxTube Extras
-        if: ${{ inputs.enable_ytlocalqueue || inputs.enable_ytlcm }}
+      - name: Download MaxTube Extras 1.2.0
+        if: ${{ inputs.enable_ytlocalqueue || inputs.enable_ytlcm || inputs.enable_ytpfBETA || inputs.enable_ytpf }}
         run: |
-          curl --fail --location --silent --show-error https://files.catbox.moe/1lg63q.deb --output maxtubeextras.deb
-          echo "8e10ac04c3a79d29e6d0dd39f7f5211a09101b892241cef4719330db39ab7e17  maxtubeextras.deb" | shasum -a 256 --check
+          curl --fail --location --silent --show-error https://files.catbox.moe/88okf5.deb --output maxtubeextras.deb
+          echo "a0d784bd9d5789a9379358204bd3bed34110b4e1d0ca68dd5da8a22450f96fe9  maxtubeextras.deb" | shasum -a 256 --check
 
       - name: Clone Open in YouTube (Safari extension)
         run: |

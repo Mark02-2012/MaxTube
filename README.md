@@ -203,6 +203,20 @@ YouTube tvOS 4.54.01 IPA. Its read-only package job validates and patches the
 base, uploads the result as a short-lived workflow artifact, and passes it to a
 separate write-scoped job that creates a draft release.
 
+## Optional tweak updates
+
+The upstream five-commit update through `113faaa` is integrated with this
+fork's YTKACE build path. Optional downloads now use YTLocalQueue 1.0.0 and
+MaxTube Extras 1.2.0 with pinned SHA-256 checksums. Extras is included when
+YTLocalQueue, YTLowContrastMode, or either YTPlaybackFix variant is selected.
+YTLocalQueue, YTLowContrastMode, and YTPlaybackFix expose their preferences in
+the **MaxTube Extras** section of YouTube settings. YTLocalQueue adds video
+overlay controls to add a video to the queue, view it, and play the next item.
+It is an optional closed-source binary from upstream.
+
+Upstream's YTPlus version and prebuilt-release notes apply to its YTPlus builds;
+this fork continues to build YTKACE from pinned source.
+
 ## Updating pinned components
 
 The repository, revision, and expected package version are defined once in

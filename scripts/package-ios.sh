@@ -84,7 +84,7 @@ PATCHED_IPA="$WORK/base-ios-ipados.ipa"
 cyan \
   -i "$PATCHED_IPA" \
   -o "$OUTPUT" \
-  -uwef "$ENHANCER" "${INJECTABLES[@]}" \
+  -uwef "$ENHANCER" ${INJECTABLES[@]+"${INJECTABLES[@]}"} \
   -n "$DISPLAY_NAME" \
   -b "$BUNDLE_ID"
 
