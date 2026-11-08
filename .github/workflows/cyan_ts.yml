@@ -1,77 +1,63 @@
-name: Generate TrollFools/Cyan files
+name: Generate YTKACE Cyan and TrollFools packages
 
 on:
   workflow_dispatch:
     inputs:
       create_cyan:
-        description: "Generate .cyan file"
-        type: boolean
-        required: true
-        default: true
-
+        {
+          description: "Generate a .cyan file",
+          type: boolean,
+          required: true,
+          default: true,
+        }
       create_tf:
-        description: "Generate .zip for TrollFools"
-        type: boolean
-        required: true
-        default: true
-
+        {
+          description: "Generate a TrollFools .zip",
+          type: boolean,
+          required: true,
+          default: true,
+        }
       enable_youpip:
-        description: "Integrate YouPiP"
-        type: boolean
-        required: true
-        default: false
-
+        { description: "Integrate YouPiP", type: boolean, default: false }
       enable_ytuhd:
-        description: "Integrate YTUHD"
-        type: boolean
-        required: true
-        default: false
-
+        { description: "Integrate YTUHD", type: boolean, default: false }
       enable_yq:
-        description: "Integrate YouQuality"
-        type: boolean
-        required: true
-        default: false
-
+        { description: "Integrate YouQuality", type: boolean, default: false }
       enable_ryd:
-        description: "Integrate Return YouTube Dislikes"
-        type: boolean
-        required: true
-        default: false
-
+        {
+          description: "Integrate Return YouTube Dislikes",
+          type: boolean,
+          default: false,
+        }
       enable_ytabc:
-        description: "Integrate YTABConfig"
-        type: boolean
-        required: true
-        default: false
-
+        { description: "Integrate YTABConfig", type: boolean, default: false }
       enable_demc:
-        description: "Integrate DontEatMyContent"
-        type: boolean
-        required: true
-        default: false
-
-      tweak_version:
-        description: "The version of the tweak to use. Enter the version manually from dayanch96/YTLite/releases or leave default"
-        default: "5.2b4"
-        required: true
-        type: string
-
+        {
+          description: "Integrate DontEatMyContent",
+          type: boolean,
+          default: false,
+        }
       display_name:
-        description: "App Name (Optional)"
-        default: "YouTube"
-        required: true
-        type: string
-
+        {
+          description: "App display name",
+          type: string,
+          required: true,
+          default: "YouTube",
+        }
       bundle_id:
-        description: "BundleID (Optional)"
-        default: "com.google.ios.youtube"
-        required: true
-        type: string
+        {
+          description: "App bundle identifier",
+          type: string,
+          required: true,
+          default: "com.google.ios.youtube",
+        }
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   build-tweaks:
@@ -83,80 +69,73 @@ jobs:
       enable_ryd: ${{ inputs.enable_ryd }}
       enable_ytabc: ${{ inputs.enable_ytabc }}
       enable_demc: ${{ inputs.enable_demc }}
-      tweak_version: ${{ inputs.tweak_version }}
 
   package:
-    name: Generate Cyan/TrollFools
+    name: Generate packages
     runs-on: macos-latest
     needs: build-tweaks
     permissions:
       contents: write
-
     steps:
-      - name: Download built debs
-        uses: actions/download-artifact@v8
-        with:
-          name: built-debs
-          path: ${{ github.workspace }}
-
-      - name: Check Inputs
+      - name: Require an output format
         if: ${{ !inputs.create_cyan && !inputs.create_tf }}
         run: |
-          echo "No output format selected."
-          exit 0
+          echo "Select at least one output format." >&2
+          exit 1
 
-      - name: Install Dependencies
-        run: brew install dpkg
-
-      - name: Install cyan
-        if: ${{ github.event.inputs.create_cyan }}
-        run: pipx install --force https://github.com/asdfzxcvbn/pyzule-rw/archive/main.zip
-
-      - name: Generate .cyan file
-        if: ${{ github.event.inputs.create_cyan }}
-        run: |
-          tweaks="ytplus.deb OpenYoutubeSafariExtension.appex"
-          for f in *.deb; do
-            [ -f "$f" ] && tweaks="$tweaks $f"
-          done
-          cgen -uwef $tweaks -n "${{ github.event.inputs.display_name }}" -b ${{ github.event.inputs.bundle_id }} -o cyan_YouTubePlus_${{ github.event.inputs.tweak_version }}.cyan
-
-      - name: Generate .zip file for TrollFools
-        if: ${{ github.event.inputs.create_tf }}
-        run: |
-          mkdir -p ytp_tf
-          for f in *.deb; do
-            if [ -f "$f" ]; then
-              mkdir -p tmp_deb
-              dpkg-deb -x "$f" tmp_deb
-              find tmp_deb -type f -name "*.dylib" -exec cp -R {} ytp_tf/ \;
-              find tmp_deb -type d -name "*.bundle" -exec cp -R {} ytp_tf/ \;
-              rm -rf tmp_deb
-            fi
-          done
-          cd ytp_tf
-          zip -r "../TrollFools_YouTubePlus_${{ github.event.inputs.tweak_version }}.zip" .
-          cd ..
-          rm -rf ytp_tf
-
-      - name: Set output file list
-        id: filelist
-        run: |
-          files=""
-          [ "${{ github.event.inputs.create_cyan }}" = "true" ] && files="${files}cyan_YouTubePlus_${{ github.event.inputs.tweak_version }}.cyan"$'\n'
-          [ "${{ github.event.inputs.create_tf }}" = "true" ]   && files="${files}TrollFools_YouTubePlus_${{ github.event.inputs.tweak_version }}.zip"$'\n'
-          echo -e "files<<EOF" >> $GITHUB_OUTPUT
-          echo -e "$files" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Upload to GitHub Releases
-        uses: softprops/action-gh-release@v3
+      - name: Download built injectables
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          tag_name: ytp-${{ github.run_number }}
-          name: YouTubePlus v${{ github.event.inputs.tweak_version }}_cyan_trollfools (${{ github.run_number }})
-          files: ${{ steps.filelist.outputs.files }}
-          draft: true
+          name: built-debs
+          path: injectables
 
-      - name: Output Release URL
+      - name: Install packaging tools
         run: |
-          echo "::notice::Release available at: https://github.com/${{ github.repository }}/releases"
+          brew install dpkg
+          pipx install --force https://github.com/asdfzxcvbn/pyzule-rw/archive/740d3716dcd98c20c000f12cdb88f1f0b2a533a4.zip
+
+      - name: Read YTKACE version
+        id: metadata
+        run: echo "version=$(dpkg-deb -f injectables/ytkace.deb Version)" >> "$GITHUB_OUTPUT"
+
+      - name: Generate Cyan package
+        if: ${{ inputs.create_cyan }}
+        env:
+          APP_BUNDLE_ID: ${{ inputs.bundle_id }}
+          APP_DISPLAY_NAME: ${{ inputs.display_name }}
+          VERSION: ${{ steps.metadata.outputs.version }}
+        run: |
+          injectables=()
+          while IFS= read -r path; do
+            injectables+=("$path")
+          done < <(find injectables -mindepth 1 \( -type f -name '*.deb' -o -type d -name '*.appex' \) -print | LC_ALL=C sort)
+          mkdir -p release
+          cgen -uwef "${injectables[@]}" -n "$APP_DISPLAY_NAME" -b "$APP_BUNDLE_ID" -o "release/YTKACE_${VERSION}.cyan"
+
+      - name: Generate TrollFools package
+        if: ${{ inputs.create_tf }}
+        env:
+          VERSION: ${{ steps.metadata.outputs.version }}
+        run: |
+          work=$(mktemp -d)
+          trap 'rm -rf "$work"' EXIT
+          release_dir="$PWD/release"
+          mkdir -p "$work/output" "$release_dir"
+          while IFS= read -r -d '' package; do
+            package_root="$work/package"
+            rm -rf "$package_root"
+            mkdir -p "$package_root"
+            dpkg-deb -x "$package" "$package_root"
+            find "$package_root" -type f -name '*.dylib' -exec cp {} "$work/output/" \;
+            find "$package_root" -type f -name '*.plist' -exec cp {} "$work/output/" \;
+            find "$package_root" -type d -name '*.bundle' -exec cp -R {} "$work/output/" \;
+          done < <(find injectables -type f -name '*.deb' -print0)
+          (cd "$work/output" && zip -qr "$release_dir/TrollFools_YTKACE_${VERSION}.zip" .)
+
+      - name: Create draft release
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          tag_name: ytkace-packages-${{ github.run_number }}
+          name: YTKACE ${{ steps.metadata.outputs.version }} packages
+          files: release/*
+          draft: true
