@@ -16,8 +16,9 @@ cancellation, cleanup, and iPad presentation paths.
 
 ## Latest status
 
-- iPhone and iPad packaging uses pinned YTKACE source and supports iOS/iPadOS
-  15.0 or the YouTube base minimum when higher.
+- iPhone and iPad packaging uses YTKACE 1.1.5 from pinned source. Upstream
+  targets YouTube 21.44.4 for iOS/iPadOS 17 or newer and 21.33.6 for iOS/iPadOS
+  16. Tweak packages support iOS/iPadOS 15.0 or the YouTube base minimum when higher.
 - Apple TV packaging is physically verified on Apple TV HD (`AppleTV5,3`)
   running tvOS 26.6. MuTube and TizenTube loaded successfully, including their
   ad-block and SponsorBlock configuration.
@@ -162,8 +163,8 @@ Publish an existing IPA and the repository's release notes as a draft:
 ```sh
 cp .github/RELEASE_TEMPLATE/Release_Notes.md dist/release-notes.md
 # Replace the two placeholders in dist/release-notes.md before publishing.
-just publish ytkace-1.0.0-youtube-21.33.6 \
-  "MaxTube: YTKACE 1.0.0 with YouTube 21.33.6" \
+just publish ytkace-1.1.5-youtube-21.44.4 \
+  "MaxTube: YTKACE 1.1.5 with YouTube 21.44.4" \
   dist/MaxTube.ipa \
   dist/release-notes.md
 ```
