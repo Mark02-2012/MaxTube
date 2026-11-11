@@ -124,7 +124,7 @@ on:
         type: string
 
       tweak_version:
-        description: "The version of the tweak to use. Versions that you can use are from 5.1 to 6.0 (no 5.2)"
+        description: "The version of YTPlus to use. Versions that you can use are from 5.1 to 6.0 (no 5.2)"
         default: "6.0"
         required: true
         type: string
