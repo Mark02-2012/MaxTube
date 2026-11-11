@@ -243,6 +243,9 @@ Returned to the original VolumeBoostYT tweak because the fork used in MaxTube 1.
 <li><strong>2.1 (October 22 2026):</strong></li>
 • Fixed duplicated YTLocalQueue setting section
 
+<li><strong>2.1.1 (November 11 2026):</strong></li>
+• Updated YTPlus from 6.0b2 to 6.0 stable (this should fix many of the issues you may be experiencing; if you encounter problems with it in LiveContainer, please let me know, though it should be working normally)
+
 ## Supported YouTube Version
 <ul>
    <li><strong>Latest confirmed:</strong> <em>21.33.6</em></li>
