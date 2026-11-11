@@ -112,7 +112,7 @@ on:
        default: false
 
       enable_ytlocalqueue:
-        description: "NEW! Integrate YTLocalQueue (MaxTube)"
+        description: "Integrate YTLocalQueue (MaxTube)"
         type: boolean
         required: true
         default: false
@@ -124,8 +124,8 @@ on:
         type: string
 
       tweak_version:
-        description: "The version of the tweak to use. Versions that you can use are from 5.1 to 6.0b2 (no 5.2)"
-        default: "6.0b2"
+        description: "The version of the tweak to use. Versions that you can use are from 5.1 to 6.0 (no 5.2)"
+        default: "6.0"
         required: true
         type: string
 
