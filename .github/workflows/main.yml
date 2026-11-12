@@ -147,6 +147,7 @@ concurrency:
 
 jobs:
   build-tweaks:
+    name: Build Tweaks
     uses: ./.github/workflows/_build_tweaks.yml
     with:
       enable_youpip: ${{ inputs.enable_youpip }}
