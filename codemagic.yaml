@@ -1,0 +1,772 @@
+
+workflows:
+  youtube-plus-maxtube:
+    name: Create YouTube Plus or MaxTube app
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+
+    inputs:
+      enable_youpip:
+        description: "Integrate YouPiP"
+        type: boolean
+        default: false
+
+      enable_ytuhd:
+        description: "Integrate YTUHD"
+        type: boolean
+        default: false
+
+      enable_yq:
+        description: "Integrate YouQuality"
+        type: boolean
+        default: false
+
+      enable_ryd:
+        description: "Integrate Return YouTube Dislikes"
+        type: boolean
+        default: false
+
+      enable_ytabc:
+        description: "Integrate YTABConfig"
+        type: boolean
+        default: false
+
+      enable_demc:
+        description: "Integrate DontEatMyContent"
+        type: boolean
+        default: false
+
+      enable_ytweaks:
+        description: "Integrate YTweaks (MaxTube)"
+        type: boolean
+        default: false
+
+      enable_gonerino:
+        description: "Integrate Gonerino (MaxTube)"
+        type: boolean
+        default: false
+
+      enable_youspeed:
+        description: "Integrate YouSpeed (MaxTube)"
+        type: boolean
+        default: false
+
+      enable_ytlcm:
+        description: "Integrate YTLowContrastMode (MaxTube)"
+        type: boolean
+        default: false
+
+      enable_VolumeBoostYT:
+        description: "Integrate VolumeBoostYT (not compatible with iOS 15; MaxTube)"
+        type: boolean
+        default: false
+
+      enable_YouGetCaption:
+        description: "Integrate YouGetCaption (MaxTube)"
+        type: boolean
+        default: false
+
+      enable_ytpf:
+        description: "Integrate YTPlaybackFix (MaxTube)"
+        type: boolean
+        default: false
+
+      enable_ytpfBETA:
+        description: "Integrate YTPlaybackFix beta (MaxTube)"
+        type: boolean
+        default: false
+
+      enable_ycq:
+        description: "Integrate YouChooseQuality (MaxTube)"
+        type: boolean
+        default: false
+
+      enable_ys:
+        description: "Integrate YouShare (MaxTube)"
+        type: boolean
+        default: false
+
+      enable_youloop:
+        description: "Integrate YouLoop (MaxTube)"
+        type: boolean
+        default: false
+
+      enable_youmute:
+        description: "Integrate YouMute (MaxTube)"
+        type: boolean
+        default: false
+
+      enable_ytlocalqueue:
+        description: "Integrate YTLocalQueue (MaxTube)"
+        type: boolean
+        default: false
+
+      ipa_url:
+        description: "URL to the decrypted IPA file"
+        type: string
+
+      tweak_version:
+        description: "YTPlus version (5.1 to 6.0, excluding 5.2)"
+        type: string
+        default: "6.0"
+
+      tweak_url:
+        description: "Optional custom URL for the YouTube Plus DEB"
+        type: string
+        default: ""
+
+      display_name:
+        description: "App Name (Optional)"
+        type: string
+        default: "YouTube"
+
+      bundle_id:
+        description: "BundleID (Optional)"
+        type: string
+        default: "com.google.ios.youtube"
+
+    environment:
+      groups:
+        - github_credentials
+
+    scripts:
+      # -------------------------------------------------------
+      # 1. Validate inputs and install dependencies
+      # -------------------------------------------------------
+      - name: Validate inputs and install dependencies
+        script: |
+          #!/bin/bash
+          set -euo pipefail
+
+          if [[ "${{ inputs.enable_ytpf }}" == "true" && "${{ inputs.enable_ytpfBETA }}" == "true" ]]; then
+            echo "ERROR: You cannot select both YTPlaybackFix stable and beta."
+            exit 1
+          fi
+
+          if [[ -z "${{ inputs.ipa_url }}" ]]; then
+            echo "ERROR: IPA URL is required."
+            exit 1
+          fi
+
+          if [[ ! "${{ inputs.bundle_id }}" =~ ^[A-Za-z0-9.-]+$ ]]; then
+            echo "ERROR: Invalid Bundle ID."
+            exit 1
+          fi
+
+          if [[ -z "${GH_TOKEN:-}" ]]; then
+            echo "ERROR: GH_TOKEN is missing."
+            echo "Create a Secret named GH_TOKEN in the github_credentials group."
+            exit 1
+          fi
+
+          brew install make ldid dpkg gh pipx
+
+          if [[ "${{ inputs.enable_gonerino }}" == "true" ]]; then
+            brew install go
+          fi
+
+          echo "THEOS=$CM_BUILD_DIR/theos" >> "$CM_ENV"
+          echo "PATH=$(brew --prefix make)/libexec/gnubin:$HOME/.local/bin:$PATH" >> "$CM_ENV"
+
+          echo "Dependencies installed."
+
+      # -------------------------------------------------------
+      # 2. Build selected tweaks
+      # -------------------------------------------------------
+      - name: Build selected tweaks
+        script: |
+          #!/bin/bash
+          set -euo pipefail
+
+          export THEOS="$CM_BUILD_DIR/theos"
+          export PATH="$(brew --prefix make)/libexec/gnubin:$HOME/.local/bin:$PATH"
+
+          cd "$CM_BUILD_DIR"
+
+          # Input variables
+          YOUPIP="${{ inputs.enable_youpip }}"
+          YTUHD="${{ inputs.enable_ytuhd }}"
+          YQ="${{ inputs.enable_yq }}"
+          RYD="${{ inputs.enable_ryd }}"
+          YTABC="${{ inputs.enable_ytabc }}"
+          DEMC="${{ inputs.enable_demc }}"
+          YTWEAKS="${{ inputs.enable_ytweaks }}"
+          GONERINO="${{ inputs.enable_gonerino }}"
+          YOUSPEED="${{ inputs.enable_youspeed }}"
+          YTLCM="${{ inputs.enable_ytlcm }}"
+          VOLUMEBOOST="${{ inputs.enable_VolumeBoostYT }}"
+          YOUGETCAPTION="${{ inputs.enable_YouGetCaption }}"
+          YTPF="${{ inputs.enable_ytpf }}"
+          YTPFBETA="${{ inputs.enable_ytpfBETA }}"
+          YCQ="${{ inputs.enable_ycq }}"
+          YS="${{ inputs.enable_ys }}"
+          YOULOOP="${{ inputs.enable_youloop }}"
+          YOUMUTE="${{ inputs.enable_youmute }}"
+          YTLOCALQUEUE="${{ inputs.enable_ytlocalqueue }}"
+
+          TWEAK_VERSION="${{ inputs.tweak_version }}"
+          TWEAK_URL="${{ inputs.tweak_url }}"
+
+          # Helper: clone repository
+          clone_repo() {
+            local url="$1"
+            local directory="$2"
+            local branch="${3:-}"
+
+            rm -rf "$directory"
+
+            if [[ -n "$branch" ]]; then
+              git clone --quiet --depth=1 --branch "$branch" "$url" "$directory"
+            else
+              git clone --quiet --depth=1 "$url" "$directory"
+            fi
+          }
+
+          # Helper: build tweak and copy generated DEB
+          build_tweak() {
+            local directory="$1"
+            local output="$2"
+            shift 2
+
+            echo "Building $directory..."
+
+            (
+              cd "$directory"
+              make clean package "$@"
+            )
+
+            local deb
+            deb="$(find "$directory/packages" -maxdepth 1 -type f -name '*.deb' | head -n 1)"
+
+            if [[ -z "$deb" ]]; then
+              echo "ERROR: No DEB package generated by $directory."
+              exit 1
+            fi
+
+            cp "$deb" "$CM_BUILD_DIR/$output"
+          }
+
+          # -----------------------------------------------------
+          # Determine whether Theos is needed
+          # -----------------------------------------------------
+          NEED_THEOS=false
+
+          for flag in \
+            "$YOUPIP" "$YTUHD" "$YQ" "$RYD" "$YTABC" "$DEMC" \
+            "$YTWEAKS" "$GONERINO" "$YOUSPEED" "$YTLCM" \
+            "$VOLUMEBOOST" "$YOUGETCAPTION" "$YTPF" "$YTPFBETA" \
+            "$YCQ" "$YS" "$YOULOOP" "$YOUMUTE"
+          do
+            if [[ "$flag" == "true" ]]; then
+              NEED_THEOS=true
+              break
+            fi
+          done
+
+          # -----------------------------------------------------
+          # Setup Theos and iOS SDK
+          # -----------------------------------------------------
+          if [[ "$NEED_THEOS" == "true" ]]; then
+            echo "Setting up Theos..."
+
+            git clone --quiet https://github.com/theos/theos.git "$THEOS"
+            git -C "$THEOS" checkout 9bc73406cf80b711ef4d02c15ff1dedc4478a275
+            git -C "$THEOS" submodule update --init --recursive
+
+            echo "Downloading iPhoneOS16.5 SDK..."
+
+            git clone --quiet -n --depth=1 --filter=tree:0 \
+              https://github.com/theos/sdks.git "$CM_BUILD_DIR/sdks"
+
+            cd "$CM_BUILD_DIR/sdks"
+            git sparse-checkout set --no-cone iPhoneOS16.5.sdk
+            git checkout
+
+            mkdir -p "$THEOS/sdks"
+            mv iPhoneOS16.5.sdk "$THEOS/sdks/"
+
+            mkdir -p "$THEOS/include"
+
+            cd "$CM_BUILD_DIR"
+
+            echo "Theos and SDK installed."
+
+            # YouTubeHeader
+            clone_repo \
+              https://github.com/PoomSmart/YouTubeHeader.git \
+              "$THEOS/include/YouTubeHeader"
+
+            # PSHeader
+            clone_repo \
+              https://github.com/PoomSmart/PSHeader.git \
+              "$THEOS/include/PSHeader"
+
+            if [[ "$DEMC" == "true" ]]; then
+              rm -rf "$THEOS/include/YTHeaders"
+              cp -R "$THEOS/include/YouTubeHeader" "$THEOS/include/YTHeaders"
+            fi
+          fi
+
+          # -----------------------------------------------------
+          # Download YouTube Plus
+          # -----------------------------------------------------
+          if [[ -n "$TWEAK_URL" ]]; then
+            echo "Downloading YouTube Plus from custom URL..."
+
+            curl --fail --location --retry 3 \
+              "$TWEAK_URL" \
+              -o ytplus.deb
+          else
+            echo "Downloading YouTube Plus version $TWEAK_VERSION..."
+
+            YTPLUS_URL="https://github.com/Mark02-2012/MaxTube/releases/download/YTPlusVersions/com.dvntm.ytlite_${TWEAK_VERSION}_iphoneos-arm.deb"
+
+            curl --fail --location --retry 3 \
+              "$YTPLUS_URL" \
+              -o ytplus.deb
+          fi
+
+          DEB_TYPE="$(file --mime-type -b ytplus.deb)"
+
+          if [[ "$DEB_TYPE" != "application/vnd.debian.binary-package" ]]; then
+            echo "ERROR: YouTube Plus is not a valid DEB."
+            echo "Detected MIME type: $DEB_TYPE"
+            exit 1
+          fi
+
+          # -----------------------------------------------------
+          # Download prebuilt tweaks
+          # -----------------------------------------------------
+          if [[ "$YTLOCALQUEUE" == "true" ]]; then
+            echo "Downloading YTLocalQueue..."
+
+            curl --fail --location --retry 3 \
+              "https://files.catbox.moe/glhygu.deb" \
+              -o ytlocalqueue.deb
+          fi
+
+          if [[ "$YTLOCALQUEUE" == "true" || "$YTLCM" == "true" || "$YTPFBETA" == "true" || "$YTPF" == "true" ]]; then
+            echo "Downloading MaxTube Extras..."
+
+            curl --fail --location --retry 3 \
+              "https://files.catbox.moe/88okf5.deb" \
+              -o maxtubeextras.deb
+          fi
+
+          # -----------------------------------------------------
+          # Clone selected tweak repositories
+          # -----------------------------------------------------
+          [[ "$YOUPIP" == "true" ]] && clone_repo \
+            https://github.com/PoomSmart/YouPiP.git YouPiP
+
+          [[ "$YTUHD" == "true" ]] && clone_repo \
+            https://github.com/Tonwalter888/YTUHD.git YTUHD
+
+          [[ "$RYD" == "true" ]] && clone_repo \
+            https://github.com/PoomSmart/Return-YouTube-Dislikes.git Return-YouTube-Dislikes
+
+          [[ "$YTABC" == "true" ]] && clone_repo \
+            https://github.com/PoomSmart/YTABConfig.git YTABConfig
+
+          [[ "$YQ" == "true" ]] && clone_repo \
+            https://github.com/PoomSmart/YouQuality.git YouQuality
+
+          [[ "$DEMC" == "true" ]] && clone_repo \
+            https://github.com/therealFoxster/DontEatMyContent.git DontEatMyContent
+
+          [[ "$YTWEAKS" == "true" ]] && clone_repo \
+            https://github.com/fosterbarnes/YTweaks.git YTweaks
+
+          [[ "$GONERINO" == "true" ]] && clone_repo \
+            https://github.com/castdrian/Gonerino.git Gonerino
+
+          [[ "$YOUSPEED" == "true" ]] && clone_repo \
+            https://github.com/PoomSmart/YouSpeed.git YouSpeed
+
+          [[ "$YTLCM" == "true" ]] && clone_repo \
+            https://github.com/Mark02-2012/YTLowContrastMode.git YTLowContrastMode
+
+          [[ "$VOLUMEBOOST" == "true" ]] && clone_repo \
+            https://github.com/irum0320/VolumeBoostYT.git VolumeBoostYT
+
+          [[ "$YOUGETCAPTION" == "true" ]] && clone_repo \
+            https://github.com/PoomSmart/YouGetCaption.git YouGetCaption
+
+          [[ "$YTPF" == "true" ]] && clone_repo \
+            https://github.com/Mark02-2012/YTPlaybackFix.git YTPlaybackFix
+
+          if [[ "$YTPFBETA" == "true" ]]; then
+            clone_repo \
+              https://github.com/Mark02-2012/YTPlaybackFix.git \
+              YTPlaybackFix beta
+          fi
+
+          [[ "$YCQ" == "true" ]] && clone_repo \
+            https://github.com/PoomSmart/YouChooseQuality.git YouChooseQuality
+
+          [[ "$YS" == "true" ]] && clone_repo \
+            https://github.com/Tonwalter888/YouShare.git YouShare
+
+          [[ "$YOULOOP" == "true" ]] && clone_repo \
+            https://github.com/bhackel/YouLoop.git YouLoop
+
+          [[ "$YOUMUTE" == "true" ]] && clone_repo \
+            https://github.com/PoomSmart/YouMute.git YouMute
+
+          # -----------------------------------------------------
+          # YouGroupSettings
+          # -----------------------------------------------------
+          NEED_YGS=false
+
+          for flag in \
+            "$YOUPIP" "$YTUHD" "$YQ" "$RYD" "$YTABC" "$DEMC" \
+            "$YTWEAKS" "$GONERINO" "$YOUSPEED" "$YTLCM" \
+            "$VOLUMEBOOST" "$YTPF" "$YTPFBETA"
+          do
+            if [[ "$flag" == "true" ]]; then
+              NEED_YGS=true
+              break
+            fi
+          done
+
+          if [[ "$NEED_YGS" == "true" ]]; then
+            clone_repo \
+              https://github.com/PoomSmart/YouGroupSettings.git \
+              YouGroupSettings
+          fi
+
+          # -----------------------------------------------------
+          # YTVideoOverlay
+          # -----------------------------------------------------
+          NEED_YTVO_CLONE=false
+
+          for flag in \
+            "$YQ" "$YOUPIP" "$YTUHD" "$YOUSPEED" \
+            "$YOUGETCAPTION" "$YS" "$YOULOOP" "$YOUMUTE"
+          do
+            if [[ "$flag" == "true" ]]; then
+              NEED_YTVO_CLONE=true
+              break
+            fi
+          done
+
+          if [[ "$NEED_YTVO_CLONE" == "true" ]]; then
+            clone_repo \
+              https://github.com/PoomSmart/YTVideoOverlay.git \
+              YTVideoOverlay
+          fi
+
+          # -----------------------------------------------------
+          # Build selected tweaks
+          # -----------------------------------------------------
+          [[ "$YOUPIP" == "true" ]] && build_tweak \
+            YouPiP youpip.deb DEBUG=0 FINALPACKAGE=1
+
+          [[ "$YTUHD" == "true" ]] && build_tweak \
+            YTUHD ytuhd.deb DEBUG=0 FINALPACKAGE=1
+
+          [[ "$RYD" == "true" ]] && build_tweak \
+            Return-YouTube-Dislikes ryd.deb DEBUG=0 FINALPACKAGE=1
+
+          [[ "$YTABC" == "true" ]] && build_tweak \
+            YTABConfig ytabc.deb DEBUG=0 FINALPACKAGE=1
+
+          if [[ "$NEED_YGS" == "true" ]]; then
+            build_tweak YouGroupSettings ygs.deb DEBUG=0 FINALPACKAGE=1
+          fi
+
+          [[ "$YQ" == "true" ]] && build_tweak \
+            YouQuality yq.deb DEBUG=0 FINALPACKAGE=1
+
+          if [[ "$YQ" == "true" || "$YOUPIP" == "true" || "$YTUHD" == "true" || "$YOUSPEED" == "true" || "$YOUGETCAPTION" == "true" ]]; then
+            build_tweak YTVideoOverlay ytvo.deb DEBUG=0 FINALPACKAGE=1
+          fi
+
+          [[ "$DEMC" == "true" ]] && build_tweak \
+            DontEatMyContent demc.deb DEBUG=0 FINALPACKAGE=1
+
+          [[ "$YTWEAKS" == "true" ]] && build_tweak \
+            YTweaks ytweaks.deb DEBUG=0 FINALPACKAGE=1
+
+          if [[ "$GONERINO" == "true" ]]; then
+            echo "Building Gonerino..."
+
+            (
+              cd Gonerino
+              gmake package FINALPACKAGE=1
+            )
+
+            DEB="$(find Gonerino/packages -maxdepth 1 -type f -name '*.deb' | head -n 1)"
+
+            if [[ -z "$DEB" ]]; then
+              echo "ERROR: Gonerino did not generate a DEB."
+              exit 1
+            fi
+
+            cp "$DEB" gonerino.deb
+          fi
+
+          [[ "$YOUSPEED" == "true" ]] && build_tweak \
+            YouSpeed youspeed.deb DEBUG=0 FINALPACKAGE=1
+
+          [[ "$YTLCM" == "true" ]] && build_tweak \
+            YTLowContrastMode ytlcm.deb DEBUG=0 FINALPACKAGE=1
+
+          [[ "$VOLUMEBOOST" == "true" ]] && build_tweak \
+            VolumeBoostYT volumeboostyt.deb DEBUG=0 FINALPACKAGE=1
+
+          [[ "$YOUGETCAPTION" == "true" ]] && build_tweak \
+            YouGetCaption yougetcaption.deb DEBUG=0 FINALPACKAGE=1
+
+          if [[ "$YTPF" == "true" ]]; then
+            build_tweak \
+              YTPlaybackFix ytpf.deb \
+              FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
+          fi
+
+          if [[ "$YTPFBETA" == "true" ]]; then
+            build_tweak \
+              YTPlaybackFix ytpfbeta.deb \
+              FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=rootless
+          fi
+
+          [[ "$YCQ" == "true" ]] && build_tweak \
+            YouChooseQuality youchoosequality.deb DEBUG=0 FINALPACKAGE=1
+
+          [[ "$YS" == "true" ]] && build_tweak \
+            YouShare youshare.deb DEBUG=0 FINALPACKAGE=1
+
+          [[ "$YOULOOP" == "true" ]] && build_tweak \
+            YouLoop youloop.deb DEBUG=0 FINALPACKAGE=1
+
+          [[ "$YOUMUTE" == "true" ]] && build_tweak \
+            YouMute youmute.deb DEBUG=0 FINALPACKAGE=1
+
+          # -----------------------------------------------------
+          # Open in YouTube Safari Extension
+          # -----------------------------------------------------
+          echo "Cloning Open in YouTube Safari Extension..."
+
+          git clone --quiet -n --depth=1 --filter=tree:0 \
+            https://github.com/BillyCurtis/OpenYouTubeSafariExtension \
+            OpenYouTubeSafariExtension
+
+          cd OpenYouTubeSafariExtension
+
+          git sparse-checkout set --no-cone OpenYoutubeSafariExtension.appex
+          git checkout
+
+          APPEX="$(find . -maxdepth 1 -type d -name '*.appex' | head -n 1)"
+
+          if [[ -z "$APPEX" ]]; then
+            echo "ERROR: OpenYoutubeSafariExtension.appex was not found."
+            exit 1
+          fi
+
+          mv "$APPEX" "$CM_BUILD_DIR/"
+          cd "$CM_BUILD_DIR"
+
+          echo "All selected tweaks have been built."
+
+      # -------------------------------------------------------
+      # 3. Download IPA, inject tweaks and publish release
+      # -------------------------------------------------------
+      - name: Inject tweaks into IPA and create Draft Release
+        script: |
+          #!/bin/bash
+          set -euo pipefail
+
+          cd "$CM_BUILD_DIR"
+
+          IPA_URL="${{ inputs.ipa_url }}"
+          TWEAK_VERSION="${{ inputs.tweak_version }}"
+          DISPLAY_NAME="${{ inputs.display_name }}"
+          BUNDLE_ID="${{ inputs.bundle_id }}"
+
+          GH_REPO="Mark02-2012/MaxTube"
+
+          # -----------------------------------------------------
+          # Download and validate IPA
+          # -----------------------------------------------------
+          echo "Downloading decrypted IPA..."
+
+          curl --fail --location --retry 3 \
+            "$IPA_URL" \
+            -o youtube.ipa
+
+          IPA_TYPE="$(file --mime-type -b youtube.ipa)"
+
+          if [[ "$IPA_TYPE" != "application/x-ios-app" && "$IPA_TYPE" != "application/zip" ]]; then
+            echo "ERROR: Invalid IPA file."
+            echo "Detected MIME type: $IPA_TYPE"
+            exit 1
+          fi
+
+          unzip -tq youtube.ipa
+
+          # -----------------------------------------------------
+          # Extract YouTube version
+          # -----------------------------------------------------
+          rm -rf ytextracted
+          mkdir -p ytextracted
+
+          unzip -q youtube.ipa -d ytextracted
+
+          INFO_PLIST="ytextracted/Payload/YouTube.app/Info.plist"
+
+          if [[ ! -f "$INFO_PLIST" ]]; then
+            echo "ERROR: YouTube Info.plist not found."
+            exit 1
+          fi
+
+          YT_VERSION=$(/usr/libexec/PlistBuddy \
+            -c 'Print :CFBundleVersion' \
+            "$INFO_PLIST")
+
+          if [[ -z "$YT_VERSION" ]]; then
+            echo "ERROR: Could not determine YouTube version."
+            exit 1
+          fi
+
+          echo "Detected YouTube version: $YT_VERSION"
+
+          # -----------------------------------------------------
+          # Determine release prefix
+          # -----------------------------------------------------
+          RELEASE_PREFIX="YTPlus"
+
+          if [[ "${{ inputs.enable_ytweaks }}" == "true" ||
+                "${{ inputs.enable_gonerino }}" == "true" ||
+                "${{ inputs.enable_youspeed }}" == "true" ||
+                "${{ inputs.enable_ytlcm }}" == "true" ||
+                "${{ inputs.enable_VolumeBoostYT }}" == "true" ||
+                "${{ inputs.enable_YouGetCaption }}" == "true" ||
+                "${{ inputs.enable_ytpf }}" == "true" ||
+                "${{ inputs.enable_ycq }}" == "true" ||
+                "${{ inputs.enable_ys }}" == "true" ||
+                "${{ inputs.enable_youloop }}" == "true" ||
+                "${{ inputs.enable_youmute }}" == "true" ||
+                "${{ inputs.enable_ytpfBETA }}" == "true" ]]; then
+
+            RELEASE_PREFIX="MaxTube"
+          fi
+
+          OUTPUT_IPA="${RELEASE_PREFIX}_${YT_VERSION}_${TWEAK_VERSION}.ipa"
+
+          # -----------------------------------------------------
+          # Install cyan
+          # -----------------------------------------------------
+          echo "Installing cyan..."
+
+          pipx install --force \
+            https://github.com/asdfzxcvbn/pyzule-rw/archive/main.zip
+
+          export PATH="$HOME/.local/bin:$PATH"
+
+          if ! command -v cyan >/dev/null 2>&1; then
+            echo "ERROR: cyan executable not found."
+            exit 1
+          fi
+
+          # -----------------------------------------------------
+          # Prepare tweak list
+          # -----------------------------------------------------
+          TWEAKS=(
+            "ytplus.deb"
+            "OpenYoutubeSafariExtension.appex"
+          )
+
+          for package in ./*.deb; do
+            [[ -f "$package" ]] || continue
+
+            if [[ "$package" == "./ytplus.deb" ]]; then
+              continue
+            fi
+
+            TWEAKS+=("${package#./}")
+          done
+
+          echo "Packages to inject:"
+          printf ' - %s\n' "${TWEAKS[@]}"
+
+          # -----------------------------------------------------
+          # Inject tweaks into IPA
+          # -----------------------------------------------------
+          cyan \
+            -i youtube.ipa \
+            -o "$OUTPUT_IPA" \
+            -uwef "${TWEAKS[@]}" \
+            -n "$DISPLAY_NAME" \
+            -b "$BUNDLE_ID"
+
+          if [[ ! -s "$OUTPUT_IPA" ]]; then
+            echo "ERROR: cyan did not generate the output IPA."
+            exit 1
+          fi
+
+          # -----------------------------------------------------
+          # Prepare release notes
+          # -----------------------------------------------------
+          sed \
+            -e "s/%yt_version%/$YT_VERSION/g" \
+            -e "s/%ytlite_version%/$TWEAK_VERSION/g" \
+            -e "s/%release_prefix%/$RELEASE_PREFIX/g" \
+            .github/RELEASE_TEMPLATE/Release_Notes.md \
+            > release_notes_prepared.md
+
+          if [[ "$YT_VERSION" == "20.21.6" ]]; then
+
+            sed \
+              -e "s/%yt_version%/$YT_VERSION/g" \
+              -e "s/%ytlite_version%/$TWEAK_VERSION/g" \
+              -e "s/%release_prefix%/$RELEASE_PREFIX/g" \
+              .github/RELEASE_TEMPLATE/Release_Notes_YT20.21.6.md \
+              > release_notes_prepared_ios_15.md
+
+            NOTES_SELECTED="release_notes_prepared_ios_15.md"
+            FOR_IOS15="(IOS 15+)"
+
+          else
+
+            NOTES_SELECTED="release_notes_prepared.md"
+            FOR_IOS15=""
+
+          fi
+
+          if [[ ! -s "$NOTES_SELECTED" ]]; then
+            echo "ERROR: Release notes file is missing or empty."
+            exit 1
+          fi
+
+          # -----------------------------------------------------
+          # Create GitHub Draft Release
+          # -----------------------------------------------------
+          TAG_NAME="${TWEAK_VERSION}_${YT_VERSION}(${BUILD_NUMBER})"
+
+          RELEASE_TITLE="$RELEASE_PREFIX $TWEAK_VERSION and $YT_VERSION $FOR_IOS15"
+
+          echo "Creating GitHub Draft Release..."
+          echo "Tag: $TAG_NAME"
+          echo "Title: $RELEASE_TITLE"
+
+          gh release create "$TAG_NAME" \
+            "$OUTPUT_IPA" \
+            --repo "$GH_REPO" \
+            --title "$RELEASE_TITLE" \
+            --notes-file "$NOTES_SELECTED" \
+            --draft \
+            --target main
+
+          RELEASE_URL="$(gh release view "$TAG_NAME" \
+            --repo "$GH_REPO" \
+            --json url \
+            --jq '.url')"
+
+          echo "Build completed successfully!"
+          echo "Draft Release: $RELEASE_URL"
+
+    artifacts:
+      - "*.ipa"
+      - "*.deb"
+      - "*.appex"
+      - "release_notes*.md"
