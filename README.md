@@ -248,17 +248,16 @@ Returned to the original VolumeBoostYT tweak because the fork used in MaxTube 1.
 
 ## Supported YouTube Version
 <ul>
-   <li><strong>Latest confirmed:</strong> <em>21.33.6</em></li>
-   <li><strong>Recommended for working downloads:</strong> <em>21.24.3</em></li>
-   <li><strong>Date tested:</strong> <em>August 24, 2026</em></li>
-   <li><strong>YouTube Plus:</strong> <em>5.2.2</em></li>
+   <li><strong>Latest confirmed:</strong> <em>21.45.2</em></li>
+   <li><strong>Date tested:</strong> <em>November 11, 2026</em></li>
+   <li><strong>YouTube Plus:</strong> <em>6.0</em></li>
 </ul>
 
 ## Supported YouTube Version For iOS 15
 <ul>
    <li><strong>Latest confirmed:</strong> <em>20.21.6</em></li>
-   <li><strong>Date tested:</strong> <em>July 24, 2026</em></li>
-   <li><strong>YouTube Plus:</strong> <em>5.2.2</em></li>
+   <li><strong>Date tested:</strong> <em>November 11, 2026</em></li>
+   <li><strong>YouTube Plus:</strong> <em>6.0</em></li>
 </ul>
 
 ## Tweak Integration Details
