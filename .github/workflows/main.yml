@@ -262,12 +262,21 @@ jobs:
           sed "s/%yt_version%/${{ env.YT_VERSION }}/g; s/%ytlite_version%/${{ inputs.tweak_version }}/g; s/%release_prefix%/${{ env.RELEASE_PREFIX }}/g" \
           .github/RELEASE_TEMPLATE/Release_Notes_YT20.21.6.md > release_notes_prepared_ios_15.md
           fi
+
+      - name: Prepare Releases Notes For iOS 16
+        run: |
+          if [ "${{ env.YT_VERSION }}" = "21.33.6" ]; then
+          
+          sed "s/%yt_version%/${{ env.YT_VERSION }}/g; s/%ytlite_version%/${{ inputs.tweak_version }}/g; s/%release_prefix%/${{ env.RELEASE_PREFIX }}/g" \
+          .github/RELEASE_TEMPLATE/Release_Notes_YT21.33.6.md > release_notes_prepared_ios_16.md
+          fi
           
       - name: Choose Releases Notes
         run: |
           if [ "${{ env.YT_VERSION }}" = "20.21.6" ]; then
-
            echo "NOTES_SELECTED=release_notes_prepared_ios_15.md" >> $GITHUB_ENV
+          elif [ "${{ env.YT_VERSION }}" = "21.33.6" ]; then
+           echo "NOTES_SELECTED=release_notes_prepared_ios_16.md" >> $GITHUB_ENV
           else
            echo "NOTES_SELECTED=release_notes_prepared.md" >> $GITHUB_ENV
           fi
@@ -275,21 +284,22 @@ jobs:
       - name: Define compatibility app in release title
         run: |
           if [ "${{ env.YT_VERSION }}" = "20.21.6" ]; then
-
-           echo "FOR_IOS15=(IOS 15+)" >> $GITHUB_ENV
-          else 
-           echo "FOR_IOS15=" >> $GITHUB_ENV
+           echo "IOS_COMPATIBILITY=(iOS 15+)" >> $GITHUB_ENV
+          elif [ "${{ env.YT_VERSION }}" = "21.33.6" ]; then
+           echo "IOS_COMPATIBILITY=(iOS 16+)" >> $GITHUB_ENV
+          else
+           echo "IOS_COMPATIBILITY=" >> $GITHUB_ENV
           fi
 
       - name: Upload to GitHub Releases
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ inputs.tweak_version }}_${{ env.YT_VERSION }}(${{ github.run_number }})
-          name: ${{ env.RELEASE_PREFIX }} ${{ inputs.tweak_version }} and ${{ env.YT_VERSION }} ${{ env.FOR_IOS15 }}
+          name: ${{ env.RELEASE_PREFIX }} ${{ inputs.tweak_version }} and ${{ env.YT_VERSION }} ${{ env.IOS_COMPATIBILITY }}
           files: ${{ env.RELEASE_PREFIX }}_${{ env.YT_VERSION }}_${{ inputs.tweak_version }}.ipa
           draft: true
           body_path: ${{ env.NOTES_SELECTED }}
 
       - name: Output Release URL
         run: |
-          echo "::notice::🚀Build completed! Release available at: https://github.com/${{ github.repository }}/releases" 
+          echo "::notice::🚀Build completed! Release available at: https://github.com/${{ github.repository }}/releases"
