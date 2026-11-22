@@ -228,11 +228,12 @@ jobs:
              [ "${{ inputs.enable_VolumeBoostYT }}" = "false" ] && \
              [ "${{ inputs.enable_YouGetCaption }}" = "false" ] && \
              [ "${{ inputs.enable_ytpf }}" = "false" ] && \
+             [ "${{ inputs.enable_ytpfBETA }}" = "false" ]
              [ "${{ inputs.enable_ycq }}" = "false" ] && \
              [ "${{ inputs.enable_ys }}" = "false" ] && \
              [ "${{ inputs.enable_youloop }}" = "false" ] && \
              [ "${{ inputs.enable_youmute }}" = "false" ] && \
-             [ "${{ inputs.enable_ytpfBETA }}" = "false" ]; then
+             [ "${{ inputs.enable_ytgifbar }}" = "false" ]; then
             
             echo "RELEASE_PREFIX=YTPlus" >> $GITHUB_ENV
           else
