@@ -76,7 +76,7 @@ on:
        default: false
 
       enable_ytpf:
-       description: "Integrate YTPlaybackFix, my tweak (MaxTube)"
+       description: "Integrate YTPlaybackFix (MaxTube)"
        type: boolean
        required: true
        default: false
@@ -113,6 +113,12 @@ on:
 
       enable_ytlocalqueue:
         description: "Integrate YTLocalQueue (MaxTube)"
+        type: boolean
+        required: true
+        default: false
+
+      enable_ytgifbar:
+        description: "NEW! Integrate YTGIFBar (MaxTube)"
         type: boolean
         required: true
         default: false
@@ -169,6 +175,7 @@ jobs:
       enable_youloop: ${{ inputs.enable_youloop }}
       enable_youmute: ${{ inputs.enable_youmute }}
       enable_ytlocalqueue: ${{ inputs.enable_ytlocalqueue }}
+      enable_ytgifbar: ${{ inputs.enable_ytgifbar }}
       tweak_version: ${{ inputs.tweak_version }}
 
 
