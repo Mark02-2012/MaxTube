@@ -178,10 +178,10 @@ jobs:
         run: |
           wget "https://files.catbox.moe/dfaepv.deb" --no-verbose -O ytgifbar.deb
 
-      - name: Download MaxTube Extras 1.2.0 section deb file
+      - name: Download MaxTube Sections 1.4.0 deb file
         if: ${{ inputs.enable_ytlocalqueue || inputs.enable_ytlcm || inputs.enable_ytpfBETA || inputs.enable_ytpf || inputs.enable_ytgifbar }}
         run: |
-          wget "https://files.catbox.moe/88okf5.deb" --no-verbose -O maxtubeextras.deb
+          wget "https://files.catbox.moe/qqhvsg.deb" --no-verbose -O maxtubesections.deb
 
       - name: Download YouTube Plus (by URL)
         if: ${{ inputs.tweak_url != '' }}
@@ -232,7 +232,7 @@ jobs:
         run: git clone --quiet --depth=1 https://github.com/PoomSmart/YTABConfig.git
 
       - name: Clone YouGroupSettings
-        if: ${{ inputs.enable_youpip || inputs.enable_ytuhd || inputs.enable_yq || inputs.enable_ryd || inputs.enable_ytabc || inputs.enable_demc || inputs.enable_ytweaks || inputs.enable_gonerino || inputs.enable_youspeed || inputs.enable_YTLCM || inputs.enable_VolumeBoostYT || inputs.enable_ytpf || inputs.enable_ytpfBETA || inputs.enable_ytgifbar }}
+        if: ${{ inputs.enable_youpip || inputs.enable_ytuhd || inputs.enable_yq || inputs.enable_ryd || inputs.enable_ytabc || inputs.enable_demc || inputs.enable_ytweaks || inputs.enable_gonerino || inputs.enable_youspeed || inputs.enable_YTLCM || inputs.enable_VolumeBoostYT || inputs.enable_ytpf || inputs.enable_ytpfBETA || inputs.enable_ycq || inputs.enable_ytgifbar }}
         run: git clone --quiet --depth=1 https://github.com/PoomSmart/YouGroupSettings.git
 
       - name: Clone YouQuality
